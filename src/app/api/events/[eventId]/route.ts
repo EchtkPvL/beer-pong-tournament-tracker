@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/session';
 import { updateEventSchema } from '@/lib/validators';
 import { getEventById, updateEvent, deleteEvent } from '@/lib/db/queries/events';
+import { allMatchesCompleted } from '@/lib/db/queries/matches';
 
 type RouteParams = { params: Promise<{ eventId: string }> };
 
@@ -39,6 +40,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         { error: 'Invalid request', details: parsed.error.flatten() },
         { status: 400 }
       );
+    }
+
+    if (parsed.data.status === 'completed') {
+      const allDone = await allMatchesCompleted(eventId);
+      if (!allDone) {
+        return NextResponse.json(
+          { error: 'Cannot complete event: not all matches have been played' },
+          { status: 400 }
+        );
+      }
     }
 
     const event = await updateEvent(eventId, parsed.data);

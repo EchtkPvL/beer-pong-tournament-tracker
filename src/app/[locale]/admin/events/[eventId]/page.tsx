@@ -151,6 +151,9 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
+  const allMatchesPlayed = matches.length > 0 &&
+    matches.filter((m) => !m.isBye).every((m) => m.status === 'completed');
+
   const handleDelete = async () => {
     const res = await fetch(`/api/events/${eventId}`, {
       method: 'DELETE',
@@ -383,7 +386,12 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                 )}
 
                 {event.status === 'active' && (
-                  <Button onClick={handleComplete} variant="secondary">
+                  <Button
+                    onClick={handleComplete}
+                    variant="secondary"
+                    disabled={!allMatchesPlayed}
+                    title={!allMatchesPlayed ? t('completeRequiresAllMatches') : undefined}
+                  >
                     {t('complete')}
                   </Button>
                 )}
@@ -454,11 +462,32 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     byRound.get(sr)!.push(m);
                   }
 
-                  return [...byRound.entries()].map(([sr, roundMatches]) => (
-                    <div key={sr}>
-                      <h4 className="mb-2 text-sm font-semibold text-primary">
-                        {tBracket('playingRound', { number: sr })}
-                      </h4>
+                  const completedCount = scheduled.filter((m) => m.status === 'completed').length;
+                  const totalCount = scheduled.length;
+
+                  return (
+                    <>
+                      <div className="mb-4 flex items-center gap-3 text-sm text-muted-foreground">
+                        <span>{completedCount} / {totalCount} {tMatches('completed').toLowerCase()}</span>
+                      </div>
+                      {[...byRound.entries()].map(([sr, roundMatches]) => {
+                        const allDone = roundMatches.every((m) => m.status === 'completed');
+                        return (
+                    <div key={sr} className={cn(allDone && 'opacity-60')}>
+                      <div className="mb-2 flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-primary">
+                          {tBracket('playingRound', { number: sr })}
+                        </h4>
+                        <span className="text-xs text-muted-foreground">
+                          ({roundMatches.length} {roundMatches.length === 1 ? 'Spiel' : 'Spiele'})
+                        </span>
+                        <div className="h-px flex-1 bg-border" />
+                        {allDone && (
+                          <Badge variant="secondary" className="text-xs">
+                            &#10003;
+                          </Badge>
+                        )}
+                      </div>
                       <div className="space-y-1">
                         {roundMatches.map((match) => {
                           const team1Name = getTeamName(match.team1Id);
@@ -534,7 +563,10 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                         })}
                       </div>
                     </div>
-                  ));
+                        );
+                      })}
+                    </>
+                  );
                 })()}
               </div>
             )}

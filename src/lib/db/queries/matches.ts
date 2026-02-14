@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and, ne, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { matches, type Match } from '@/lib/db/schema';
@@ -64,4 +64,18 @@ export async function createMatch(data: CreateMatchData) {
 
 export async function deleteMatchesByEvent(eventId: string) {
   return db.delete(matches).where(eq(matches.eventId, eventId));
+}
+
+export async function allMatchesCompleted(eventId: string): Promise<boolean> {
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(matches)
+    .where(
+      and(
+        eq(matches.eventId, eventId),
+        eq(matches.isBye, false),
+        ne(matches.status, 'completed')
+      )
+    );
+  return (rows[0]?.count ?? 0) === 0;
 }

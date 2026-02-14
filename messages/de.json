@@ -66,7 +66,8 @@
     "pastEvents": "Vergangene Turniere",
     "viewEvent": "Turnier ansehen",
     "manageEvent": "Turnier verwalten",
-    "openEventExists": "Es gibt bereits ein offenes Turnier. Schließe oder lösche es zuerst."
+    "openEventExists": "Es gibt bereits ein offenes Turnier. Schließe oder lösche es zuerst.",
+    "completeRequiresAllMatches": "Alle Spiele müssen abgeschlossen sein, bevor das Turnier beendet werden kann"
   },
   "teams": {
     "title": "Teams",
@@ -155,7 +156,8 @@
     "scheduled": "Geplant",
     "inProgress": "Laufend",
     "assignTable": "Tisch zuweisen",
-    "autoAssign": "Automatisch zuweisen"
+    "autoAssign": "Automatisch zuweisen",
+    "concurrent": "{count, plural, one {Spiel} other {Spiele}} gleichzeitig"
   },
   "beamer": {
     "currentMatches": "Aktuelle Spiele",

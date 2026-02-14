@@ -97,7 +97,7 @@ export function generateGroupPhase(
       id: nanoid(),
       roundNumber: r + 1,
       phase: 'group',
-      name: `Spieltag ${r + 1}`,
+      name: `Runde ${r + 1}`,
     });
   }
 

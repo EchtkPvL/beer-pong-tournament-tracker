@@ -66,7 +66,8 @@
     "pastEvents": "Past Tournaments",
     "viewEvent": "View Tournament",
     "manageEvent": "Manage Tournament",
-    "openEventExists": "An open tournament already exists. Complete or delete it first."
+    "openEventExists": "An open tournament already exists. Complete or delete it first.",
+    "completeRequiresAllMatches": "All matches must be completed before closing the tournament"
   },
   "teams": {
     "title": "Teams",
@@ -155,7 +156,8 @@
     "scheduled": "Scheduled",
     "inProgress": "In Progress",
     "assignTable": "Assign Table",
-    "autoAssign": "Auto-assign"
+    "autoAssign": "Auto-assign",
+    "concurrent": "{count, plural, one {match} other {matches}} simultaneous"
   },
   "beamer": {
     "currentMatches": "Current Matches",
