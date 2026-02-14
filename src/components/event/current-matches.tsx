@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
+
 import { Badge } from '@/components/ui/badge';
 import type { Match, Team } from '@/lib/db/schema';
 

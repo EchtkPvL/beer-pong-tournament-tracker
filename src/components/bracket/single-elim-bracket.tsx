@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
+
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { RoundColumn } from './round-column';
 import { BracketConnector } from './bracket-connector';
@@ -63,11 +63,6 @@ export function SingleElimBracket({
     <div className="flex items-stretch gap-0">
       {sortedRounds.map((round, index) => {
         const roundMatches = matchesByRound[round.id] ?? [];
-        const nextRound = sortedRounds[index + 1];
-        const nextRoundMatches = nextRound
-          ? (matchesByRound[nextRound.id] ?? [])
-          : [];
-
         return (
           <div key={round.id} className="flex items-stretch">
             <RoundColumn

@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { matches, teams } from '@/lib/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import type { GroupStanding } from './types';
 
 /**

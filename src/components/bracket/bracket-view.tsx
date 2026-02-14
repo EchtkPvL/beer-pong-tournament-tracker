@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+
 import { cn } from '@/lib/utils';
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { SingleElimBracket } from './single-elim-bracket';
@@ -25,8 +25,6 @@ export function BracketView({
   onMatchClick,
   isAdmin,
 }: BracketViewProps) {
-  const t = useTranslations('bracket');
-
   const content = useMemo(() => {
     switch (mode) {
       case 'single_elimination':
@@ -53,7 +51,6 @@ export function BracketView({
         return (
           <GroupPhaseView
             matches={matches}
-            rounds={rounds}
             teams={teams}
             onMatchClick={onMatchClick}
             isAdmin={isAdmin}

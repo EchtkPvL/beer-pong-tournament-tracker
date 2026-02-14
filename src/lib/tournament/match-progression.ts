@@ -29,12 +29,12 @@ export async function setMatchResult(
 
   // Advance winner to next match
   if (match.nextMatchId) {
-    await placeTeamInMatch(match.nextMatchId, winnerId, matchId);
+    await placeTeamInMatch(match.nextMatchId, winnerId);
   }
 
   // Advance loser to losers bracket (double elimination)
   if (match.loserNextMatchId) {
-    await placeTeamInMatch(match.loserNextMatchId, loserId, matchId);
+    await placeTeamInMatch(match.loserNextMatchId, loserId);
   }
 
   // Log event
@@ -49,7 +49,7 @@ export async function setMatchResult(
 /**
  * Place a team into a match (in the first available slot)
  */
-async function placeTeamInMatch(matchId: string, teamId: string, fromMatchId: string): Promise<void> {
+async function placeTeamInMatch(matchId: string, teamId: string): Promise<void> {
   const match = await db.select().from(matches).where(eq(matches.id, matchId)).then(r => r[0]);
   if (!match) return;
 
@@ -163,7 +163,7 @@ export async function processByes(eventId: string): Promise<void> {
 
     // Advance to next match
     if (match.nextMatchId) {
-      await placeTeamInMatch(match.nextMatchId, presentTeamId, match.id);
+      await placeTeamInMatch(match.nextMatchId, presentTeamId);
     }
   }
 }
@@ -203,7 +203,7 @@ export async function disqualifyTeam(teamId: string, eventId: string): Promise<v
 
       // Advance opponent
       if (match.nextMatchId) {
-        await placeTeamInMatch(match.nextMatchId, opponentId, match.id);
+        await placeTeamInMatch(match.nextMatchId, opponentId);
       }
     } else {
       // No opponent yet - mark as completed with the DQ team losing

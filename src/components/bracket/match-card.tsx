@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+
 import { cn } from '@/lib/utils';
 import type { Match, Team } from '@/lib/db/schema';
 import { TeamSlot } from './team-slot';
@@ -20,8 +20,6 @@ const statusColors: Record<string, string> = {
 };
 
 export function MatchCard({ match, teams, onClick, isAdmin }: MatchCardProps) {
-  const t = useTranslations('bracket');
-
   const team1 = match.team1Id ? teams[match.team1Id] ?? null : null;
   const team2 = match.team2Id ? teams[match.team2Id] ?? null : null;
 

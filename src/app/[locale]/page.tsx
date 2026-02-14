@@ -1,14 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db';
-import { events, teams } from '@/lib/db/schema';
-import { eq, sql, desc } from 'drizzle-orm';
+import { events } from '@/lib/db/schema';
+import { sql, desc } from 'drizzle-orm';
 import { Header } from '@/components/layout';
 import { Footer } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
-import { cn } from '@/lib/utils';
+
 
 function StatusBadge({
   status,
@@ -55,8 +55,6 @@ function ModeLabel({
 
 export default async function HomePage() {
   const t = await getTranslations('events');
-  const tNav = await getTranslations('nav');
-
   const allEvents = await db
     .select({
       id: events.id,

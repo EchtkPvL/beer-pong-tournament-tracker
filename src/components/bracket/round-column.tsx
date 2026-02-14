@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { MatchCard } from './match-card';
 

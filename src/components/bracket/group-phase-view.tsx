@@ -3,14 +3,13 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import type { Match, Round, Team } from '@/lib/db/schema';
+import type { Match, Team } from '@/lib/db/schema';
 import type { GroupStanding } from '@/lib/tournament/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MatchCard } from './match-card';
 
 interface GroupPhaseViewProps {
   matches: Match[];
-  rounds: Round[];
   teams: Team[];
   onMatchClick?: (match: Match) => void;
   isAdmin: boolean;
@@ -18,7 +17,6 @@ interface GroupPhaseViewProps {
 
 export function GroupPhaseView({
   matches,
-  rounds,
   teams,
   onMatchClick,
   isAdmin,

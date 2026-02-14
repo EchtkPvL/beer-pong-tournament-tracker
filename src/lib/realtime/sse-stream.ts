@@ -1,4 +1,4 @@
-import { desc, eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eventLog } from '@/lib/db/schema';
 

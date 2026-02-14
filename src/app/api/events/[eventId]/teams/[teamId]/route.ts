@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/session';
 import { updateTeamSchema } from '@/lib/validators';
-import { getTeamById, updateTeam, deleteTeam } from '@/lib/db/queries/teams';
+import { updateTeam, deleteTeam } from '@/lib/db/queries/teams';
 
 type RouteParams = { params: Promise<{ eventId: string; teamId: string }> };
 

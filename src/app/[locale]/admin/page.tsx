@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db';
-import { events, teams } from '@/lib/db/schema';
+import { events } from '@/lib/db/schema';
 import { desc, sql } from 'drizzle-orm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

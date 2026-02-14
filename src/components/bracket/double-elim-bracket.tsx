@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
+
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { RoundColumn } from './round-column';
 import { BracketConnector } from './bracket-connector';
