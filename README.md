@@ -63,7 +63,7 @@ npm run dev
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start dev server with Turbopack |
+| `npm run dev` | Start dev server |
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run db:push` | Push schema to database |
@@ -84,6 +84,18 @@ npm run dev
 
 ## Deployment (Vercel)
 
+### How deployment works
+
+Deployments are **tag-based only**. Vercel's automatic Git deployments are disabled via `vercel.json` — pushing commits or merging pull requests will **not** trigger any deployment.
+
+The only way to deploy to production is by pushing a Git tag that starts with `v` (e.g. `v1.0.0`). This triggers the GitHub Actions workflow at `.github/workflows/deploy.yml`, which:
+
+1. Verifies the tagged commit exists on the `main` branch (tags on feature branches or PRs are rejected)
+2. Installs dependencies and builds the project
+3. Deploys to Vercel production using the Vercel CLI
+
+The tag name is baked into the build as `NEXT_PUBLIC_VERSION` and shown in the footer.
+
 ### Initial setup
 
 1. Push the repo to GitHub
@@ -93,43 +105,67 @@ npm run dev
    - `ADMIN_PASSWORD` — a strong password
    - `JWT_SECRET` — random 32+ character string
    - `NEXT_PUBLIC_GITHUB_URL` — your repo URL
-5. `NEXT_PUBLIC_VERSION` is set automatically by the deploy workflow from the git tag
+5. Add the required secrets to the GitHub repository (see below)
 
-### Production deploy via tags
+### Required GitHub Actions secrets
 
-Pushing to `main` creates a Vercel **preview** deployment automatically. To deploy to **production**, create a git tag:
+Configure these in your GitHub repo under **Settings > Secrets and variables > Actions**:
+
+| Secret | Description | How to get it |
+|--------|-------------|---------------|
+| `VERCEL_TOKEN` | Vercel API token | [Vercel Settings > Tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Vercel organization/team ID | Run `npx vercel link` locally, then check `.vercel/project.json` |
+| `VERCEL_PROJECT_ID` | Vercel project ID | Same `.vercel/project.json` file after linking |
+
+### Deploying a new version
 
 ```bash
+# Make sure you're on main with the latest changes
+git checkout main
+git pull
+
+# Create and push a version tag
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-This triggers the GitHub Actions workflow (`.github/workflows/deploy.yml`) which builds and deploys to production with the version number baked in.
+The workflow will build and deploy automatically. Check progress in the **Actions** tab on GitHub.
 
-### Required GitHub Actions secrets
-
-| Secret | Description |
-|--------|-------------|
-| `VERCEL_TOKEN` | Vercel API token |
-| `VERCEL_ORG_ID` | Vercel organization/team ID |
-| `VERCEL_PROJECT_ID` | Vercel project ID |
-
-### Rollback
-
-Option 1 — Re-tag an older commit:
+### Deploying a hotfix
 
 ```bash
-git tag v1.0.1 <old-commit-sha>
+# Fix the issue on main
+git checkout main
+# ... make changes, commit, push ...
+
+# Tag the new commit
+git tag v1.0.1
 git push origin v1.0.1
 ```
 
-Option 2 — Manual rollback via workflow dispatch:
+### Rollback
+
+**Option 1** — Tag an older commit and deploy it:
+
+```bash
+git tag v1.0.2 <old-commit-sha>
+git push origin v1.0.2
+```
+
+**Option 2** — Use Vercel's instant rollback via workflow dispatch:
 
 ```bash
 gh workflow run deploy.yml
 ```
 
-This triggers the rollback job which runs `vercel rollback`.
+This runs `vercel rollback`, which instantly reverts to the previous production deployment without rebuilding.
+
+### What does NOT trigger a deployment
+
+- Pushing commits to `main`
+- Pushing commits to any other branch
+- Opening, merging, or closing pull requests
+- Tagging a commit that is not on `main`
 
 ## Project Structure
 
