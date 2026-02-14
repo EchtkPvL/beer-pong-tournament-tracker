@@ -1,7 +1,7 @@
-import { pgTable, text, integer, boolean, timestamp, json, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, integer, boolean, timestamp, json, unique } from 'drizzle-orm/pg-core';
 
 export const events = pgTable('events', {
-  id: text('id').primaryKey(),
+  id: serial('id').primaryKey(),
   name: text('name').notNull().default(''),
   date: text('date'),
   location: text('location'),
@@ -17,7 +17,7 @@ export const events = pgTable('events', {
 
 export const teams = pgTable('teams', {
   id: text('id').primaryKey(),
-  eventId: text('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   members: json('members').$type<string[]>(),
   seed: integer('seed'),
@@ -29,7 +29,7 @@ export const teams = pgTable('teams', {
 
 export const rounds = pgTable('rounds', {
   id: text('id').primaryKey(),
-  eventId: text('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   roundNumber: integer('round_number').notNull(),
   phase: text('phase', { enum: ['group', 'winners', 'losers', 'finals'] }).notNull(),
   name: text('name').notNull(),
@@ -38,7 +38,7 @@ export const rounds = pgTable('rounds', {
 
 export const matches = pgTable('matches', {
   id: text('id').primaryKey(),
-  eventId: text('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   roundId: text('round_id').notNull().references(() => rounds.id, { onDelete: 'cascade' }),
   matchNumber: integer('match_number').notNull(),
   team1Id: text('team1_id').references(() => teams.id),
@@ -58,7 +58,7 @@ export const matches = pgTable('matches', {
 
 export const timerState = pgTable('timer_state', {
   id: text('id').primaryKey(),
-  eventId: text('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }).unique(),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }).unique(),
   roundId: text('round_id').references(() => rounds.id),
   durationSeconds: integer('duration_seconds').notNull().default(600),
   remainingSeconds: integer('remaining_seconds').notNull().default(600),
@@ -68,7 +68,7 @@ export const timerState = pgTable('timer_state', {
 
 export const eventLog = pgTable('event_log', {
   id: text('id').primaryKey(),
-  eventId: text('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   payload: json('payload'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

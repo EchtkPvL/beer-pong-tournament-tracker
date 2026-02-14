@@ -5,7 +5,8 @@ type RouteParams = { params: Promise<{ eventId: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const matches = await getMatchesByEvent(eventId);
     return NextResponse.json(matches);
   } catch {

@@ -71,7 +71,7 @@ function groupLetter(index: number): string {
 }
 
 export function generateGroupPhase(
-  eventId: string,
+  eventId: number,
   teams: TeamSeed[],
   groupCount: number
 ): GeneratedBracket {

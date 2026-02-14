@@ -8,7 +8,8 @@ type RouteParams = { params: Promise<{ eventId: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const event = await getEventById(eventId);
 
     if (!event) {
@@ -31,7 +32,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const body = await request.json();
     const parsed = updateEventSchema.safeParse(body);
 
@@ -74,7 +76,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const event = await deleteEvent(eventId);
 
     if (!event) {

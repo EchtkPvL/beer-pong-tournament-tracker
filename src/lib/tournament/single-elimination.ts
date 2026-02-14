@@ -41,7 +41,7 @@ function generateSeedOrder(bracketSize: number): number[] {
 }
 
 export function generateSingleEliminationBracket(
-  eventId: string,
+  eventId: number,
   teams: TeamSeed[]
 ): GeneratedBracket {
   if (teams.length < 2) {

@@ -1,5 +1,4 @@
 import { eq, ne, and, or, desc } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { events, type NewEvent } from '@/lib/db/schema';
 
@@ -7,7 +6,7 @@ export async function getAllEvents() {
   return db.select().from(events).orderBy(desc(events.createdAt));
 }
 
-export async function getEventById(id: string) {
+export async function getEventById(id: number) {
   const rows = await db.select().from(events).where(eq(events.id, id));
   return rows[0] ?? null;
 }
@@ -22,15 +21,14 @@ export async function hasOpenEvent(): Promise<boolean> {
 }
 
 export async function createEvent(data: Omit<NewEvent, 'id' | 'createdAt' | 'updatedAt'>) {
-  const id = nanoid();
   const rows = await db
     .insert(events)
-    .values({ ...data, id })
+    .values(data)
     .returning();
   return rows[0];
 }
 
-export async function updateEvent(id: string, data: Partial<Omit<NewEvent, 'id' | 'createdAt'>>) {
+export async function updateEvent(id: number, data: Partial<Omit<NewEvent, 'id' | 'createdAt'>>) {
   // If setting this event to active, deactivate all other active events first
   if (data.status === 'active') {
     await db
@@ -47,7 +45,7 @@ export async function updateEvent(id: string, data: Partial<Omit<NewEvent, 'id' 
   return rows[0] ?? null;
 }
 
-export async function deleteEvent(id: string) {
+export async function deleteEvent(id: number) {
   const rows = await db
     .delete(events)
     .where(eq(events.id, id))

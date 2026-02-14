@@ -7,7 +7,8 @@ type RouteParams = { params: Promise<{ eventId: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const teams = await getTeamsByEvent(eventId);
     return NextResponse.json(teams);
   } catch {
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
     const body = await request.json();
     const parsed = createTeamSchema.safeParse(body);
 

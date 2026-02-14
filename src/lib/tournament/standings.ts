@@ -7,7 +7,7 @@ import type { GroupStanding } from './types';
  * Calculate group standings from completed matches
  */
 export async function calculateGroupStandings(
-  eventId: string,
+  eventId: number,
   groupId: string
 ): Promise<GroupStanding[]> {
   // Get all teams in this group
@@ -94,7 +94,7 @@ export async function calculateGroupStandings(
 /**
  * Check if all group matches are completed
  */
-export async function areAllGroupMatchesCompleted(eventId: string): Promise<boolean> {
+export async function areAllGroupMatchesCompleted(eventId: number): Promise<boolean> {
   const groupMatchesResult = await db.select().from(matches)
     .where(
       and(

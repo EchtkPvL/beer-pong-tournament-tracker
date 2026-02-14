@@ -139,7 +139,7 @@ export async function clearMatchResult(matchId: string): Promise<void> {
 /**
  * Process bye matches - auto-advance teams that have a bye
  */
-export async function processByes(eventId: string): Promise<void> {
+export async function processByes(eventId: number): Promise<void> {
   const byeMatches = await db.select().from(matches)
     .where(
       and(
@@ -171,7 +171,7 @@ export async function processByes(eventId: string): Promise<void> {
 /**
  * Disqualify a team - all future pending matches become losses
  */
-export async function disqualifyTeam(teamId: string, eventId: string): Promise<void> {
+export async function disqualifyTeam(teamId: string, eventId: number): Promise<void> {
   // Mark team as disqualified
   await db.update(teams).set({ status: 'disqualified' }).where(eq(teams.id, teamId));
 

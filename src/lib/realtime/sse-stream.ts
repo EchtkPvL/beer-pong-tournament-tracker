@@ -2,7 +2,7 @@ import { eq, and, gt } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eventLog } from '@/lib/db/schema';
 
-export function createSSEStream(eventId: string): ReadableStream {
+export function createSSEStream(eventId: number): ReadableStream {
   let lastTimestamp = new Date();
   let cancelled = false;
 

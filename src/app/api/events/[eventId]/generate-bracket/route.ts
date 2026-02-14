@@ -23,7 +23,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { eventId } = await params;
+    const { eventId: rawEventId } = await params;
+    const eventId = parseInt(rawEventId, 10);
 
     const event = await getEventById(eventId);
     if (!event) {

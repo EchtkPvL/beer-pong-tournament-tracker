@@ -5,7 +5,7 @@ import { eq, and, isNull, isNotNull } from 'drizzle-orm';
 /**
  * Get available tables for an event
  */
-export async function getAvailableTables(eventId: string): Promise<number[]> {
+export async function getAvailableTables(eventId: number): Promise<number[]> {
   const event = await db.select().from(events).where(eq(events.id, eventId)).then(r => r[0]);
   if (!event) throw new Error('Event not found');
 
@@ -45,7 +45,7 @@ export async function assignTable(matchId: string, tableNumber: number): Promise
 /**
  * Auto-assign available tables to pending matches that have both teams
  */
-export async function autoAssignTables(eventId: string): Promise<number> {
+export async function autoAssignTables(eventId: number): Promise<number> {
   const available = await getAvailableTables(eventId);
   if (available.length === 0) return 0;
 

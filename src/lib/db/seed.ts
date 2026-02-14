@@ -10,17 +10,17 @@ const db = drizzle(client);
 async function seed() {
   console.log('Seeding database...');
 
-  // Create a sample event
-  const eventId = nanoid();
-  await db.insert(events).values({
-    id: eventId,
+  // Create a sample event (id is auto-generated)
+  const [event] = await db.insert(events).values({
     name: 'Sommerfest Turnier 2025',
     date: '2025-07-15',
     location: 'Biergarten am See',
     mode: 'single_elimination',
     status: 'draft',
     tableCount: 2,
-  });
+  }).returning();
+
+  const eventId = event.id;
 
   // Create sample teams
   const teamNames = [

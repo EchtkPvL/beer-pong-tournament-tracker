@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { teams, type NewTeam } from '@/lib/db/schema';
 
-export async function getTeamsByEvent(eventId: string) {
+export async function getTeamsByEvent(eventId: number) {
   return db
     .select()
     .from(teams)
@@ -17,7 +17,7 @@ export async function getTeamById(id: string) {
 }
 
 export async function createTeam(
-  eventId: string,
+  eventId: number,
   data: Omit<NewTeam, 'id' | 'eventId'>
 ) {
   const id = nanoid();
@@ -45,7 +45,7 @@ export async function deleteTeam(id: string) {
   return rows[0] ?? null;
 }
 
-export async function getTeamCount(eventId: string) {
+export async function getTeamCount(eventId: number) {
   const rows = await db
     .select({ value: count() })
     .from(teams)

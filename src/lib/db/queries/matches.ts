@@ -5,7 +5,7 @@ import { matches, type Match } from '@/lib/db/schema';
 
 type CreateMatchData = {
   id?: string;
-  eventId: string;
+  eventId: number;
   roundId: string;
   matchNumber: number;
   team1Id?: string | null;
@@ -23,7 +23,7 @@ type CreateMatchData = {
   groupId?: string | null;
 };
 
-export async function getMatchesByEvent(eventId: string) {
+export async function getMatchesByEvent(eventId: number) {
   return db
     .select()
     .from(matches)
@@ -62,11 +62,11 @@ export async function createMatch(data: CreateMatchData) {
   return rows[0];
 }
 
-export async function deleteMatchesByEvent(eventId: string) {
+export async function deleteMatchesByEvent(eventId: number) {
   return db.delete(matches).where(eq(matches.eventId, eventId));
 }
 
-export async function allMatchesCompleted(eventId: string): Promise<boolean> {
+export async function allMatchesCompleted(eventId: number): Promise<boolean> {
   const rows = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(matches)

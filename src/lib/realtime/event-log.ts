@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { eventLog } from '@/lib/db/schema';
 
 export async function logEvent(
-  eventId: string,
+  eventId: number,
   action: string,
   payload?: unknown
 ) {

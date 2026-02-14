@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { timerState, type TimerState } from '@/lib/db/schema';
 
-export async function getTimerByEvent(eventId: string) {
+export async function getTimerByEvent(eventId: number) {
   const rows = await db
     .select()
     .from(timerState)
@@ -12,7 +12,7 @@ export async function getTimerByEvent(eventId: string) {
 }
 
 export async function upsertTimer(
-  eventId: string,
+  eventId: number,
   data: Partial<Omit<TimerState, 'id' | 'eventId'>>
 ) {
   const id = nanoid();

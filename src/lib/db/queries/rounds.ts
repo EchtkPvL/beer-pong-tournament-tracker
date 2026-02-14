@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { rounds, type Round } from '@/lib/db/schema';
 
-export async function getRoundsByEvent(eventId: string) {
+export async function getRoundsByEvent(eventId: number) {
   return db
     .select()
     .from(rounds)
@@ -29,6 +29,6 @@ export async function updateRound(id: string, data: Partial<Omit<Round, 'id' | '
   return rows[0] ?? null;
 }
 
-export async function deleteRoundsByEvent(eventId: string) {
+export async function deleteRoundsByEvent(eventId: number) {
   return db.delete(rounds).where(eq(rounds.eventId, eventId));
 }
