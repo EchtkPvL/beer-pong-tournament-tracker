@@ -1,4 +1,4 @@
-import { eq, ne, and, desc } from 'drizzle-orm';
+import { eq, ne, and, or, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { events, type NewEvent } from '@/lib/db/schema';
@@ -10,6 +10,15 @@ export async function getAllEvents() {
 export async function getEventById(id: string) {
   const rows = await db.select().from(events).where(eq(events.id, id));
   return rows[0] ?? null;
+}
+
+export async function hasOpenEvent(): Promise<boolean> {
+  const rows = await db
+    .select({ id: events.id })
+    .from(events)
+    .where(or(eq(events.status, 'draft'), eq(events.status, 'active')))
+    .limit(1);
+  return rows.length > 0;
 }
 
 export async function createEvent(data: Omit<NewEvent, 'id' | 'createdAt' | 'updatedAt'>) {

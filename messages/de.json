@@ -65,7 +65,8 @@
     "latestEvent": "Letztes Turnier",
     "pastEvents": "Vergangene Turniere",
     "viewEvent": "Turnier ansehen",
-    "manageEvent": "Turnier verwalten"
+    "manageEvent": "Turnier verwalten",
+    "openEventExists": "Es gibt bereits ein offenes Turnier. Schließe oder lösche es zuerst."
   },
   "teams": {
     "title": "Teams",

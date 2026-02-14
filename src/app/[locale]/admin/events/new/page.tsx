@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,21 @@ export default function NewEventPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
+
+  // Check if an open event already exists
+  useEffect(() => {
+    fetch('/api/events')
+      .then((res) => res.json())
+      .then((events: { status: string }[]) => {
+        const hasOpen = events.some((e) => e.status === 'draft' || e.status === 'active');
+        if (hasOpen) {
+          setBlocked(true);
+          setError(t('openEventExists'));
+        }
+      })
+      .catch(() => {});
+  }, [t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +155,7 @@ export default function NewEventPage() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || blocked}>
                 {isSubmitting ? tCommon('loading') : tCommon('create')}
               </Button>
               <Button

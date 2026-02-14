@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { BracketView } from '@/components/bracket/bracket-view';
 import { CurrentMatches } from '@/components/event/current-matches';
 import { EventStats } from '@/components/event/event-stats';
+import { TeamStandings } from '@/components/event/team-standings';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
 import type { Event, Team, Match, Round } from '@/lib/db/schema';
 
@@ -142,6 +143,8 @@ function EventPageContent({ eventId }: { eventId: string }) {
           <EventStats matches={matches} teams={teams} />
 
           <CurrentMatches matches={matches} teams={teams} />
+
+          <TeamStandings matches={matches} teams={teams} />
 
           {rounds.length > 0 && matches.length > 0 && (
             <BracketView

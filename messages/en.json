@@ -65,7 +65,8 @@
     "latestEvent": "Latest Tournament",
     "pastEvents": "Past Tournaments",
     "viewEvent": "View Tournament",
-    "manageEvent": "Manage Tournament"
+    "manageEvent": "Manage Tournament",
+    "openEventExists": "An open tournament already exists. Complete or delete it first."
   },
   "teams": {
     "title": "Teams",

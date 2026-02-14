@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/session';
 import { createEventSchema } from '@/lib/validators';
-import { getAllEvents, createEvent } from '@/lib/db/queries/events';
+import { getAllEvents, createEvent, hasOpenEvent } from '@/lib/db/queries/events';
 
 export async function GET() {
   try {
@@ -20,6 +20,13 @@ export async function POST(request: NextRequest) {
     const token = request.cookies.get('bptt-session')?.value;
     if (!token || !(await verifySession(token))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await hasOpenEvent()) {
+      return NextResponse.json(
+        { error: 'An open event already exists. Complete or delete it first.' },
+        { status: 409 }
+      );
     }
 
     const body = await request.json();
