@@ -72,8 +72,9 @@ export default async function HomePage() {
     .from(events)
     .orderBy(desc(events.createdAt));
 
-  const activeEvent = allEvents.find((e) => e.status === 'active');
-  const otherEvents = allEvents.filter((e) => e.id !== activeEvent?.id);
+  // Show active event, or most recent event if none active
+  const currentEvent = allEvents.find((e) => e.status === 'active') ?? allEvents[0] ?? null;
+  const otherEvents = allEvents.filter((e) => e.id !== currentEvent?.id);
 
   const statusLabels = {
     draft: t('draft'),
@@ -94,43 +95,45 @@ export default async function HomePage() {
       <main className="container mx-auto flex-1 px-4 py-8">
         <h1 className="mb-8 text-3xl font-bold">{t('title')}</h1>
 
-        {activeEvent && (
+        {currentEvent && (
           <section className="mb-10">
-            <h2 className="mb-4 text-xl font-semibold">{t('activeEvent')}</h2>
-            <Card className="border-primary/50">
+            <h2 className="mb-4 text-xl font-semibold">
+              {currentEvent.status === 'active' ? t('activeEvent') : t('latestEvent')}
+            </h2>
+            <Card className={currentEvent.status === 'active' ? 'border-primary/50' : ''}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl">{activeEvent.name || t('title')}</CardTitle>
-                  <StatusBadge status={activeEvent.status} labels={statusLabels} />
+                  <CardTitle className="text-2xl">{currentEvent.name || t('title')}</CardTitle>
+                  <StatusBadge status={currentEvent.status} labels={statusLabels} />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 md:grid-cols-4">
-                  {activeEvent.date && (
+                  {currentEvent.date && (
                     <div>
                       <span className="font-medium text-foreground">{t('date')}:</span>{' '}
-                      {activeEvent.date}
+                      {currentEvent.date}
                     </div>
                   )}
-                  {activeEvent.location && (
+                  {currentEvent.location && (
                     <div>
                       <span className="font-medium text-foreground">{t('location')}:</span>{' '}
-                      {activeEvent.location}
+                      {currentEvent.location}
                     </div>
                   )}
                   <div>
                     <span className="font-medium text-foreground">{t('mode')}:</span>{' '}
-                    <ModeLabel mode={activeEvent.mode} labels={modeLabels} />
+                    <ModeLabel mode={currentEvent.mode} labels={modeLabels} />
                   </div>
                   <div>
                     <span className="font-medium text-foreground">Teams:</span>{' '}
-                    {t('teamCount', { count: activeEvent.teamCount })}
+                    {t('teamCount', { count: currentEvent.teamCount })}
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
                 <Button asChild>
-                  <Link href={`/events/${activeEvent.id}`}>{t('viewEvent')}</Link>
+                  <Link href={`/events/${currentEvent.id}`}>{t('viewEvent')}</Link>
                 </Button>
               </CardFooter>
             </Card>

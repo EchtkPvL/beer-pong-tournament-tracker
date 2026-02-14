@@ -1,4 +1,4 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, ne, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import { events, type NewEvent } from '@/lib/db/schema';
@@ -22,6 +22,14 @@ export async function createEvent(data: Omit<NewEvent, 'id' | 'createdAt' | 'upd
 }
 
 export async function updateEvent(id: string, data: Partial<Omit<NewEvent, 'id' | 'createdAt'>>) {
+  // If setting this event to active, deactivate all other active events first
+  if (data.status === 'active') {
+    await db
+      .update(events)
+      .set({ status: 'completed', updatedAt: new Date() })
+      .where(and(eq(events.status, 'active'), ne(events.id, id)));
+  }
+
   const rows = await db
     .update(events)
     .set({ ...data, updatedAt: new Date() })

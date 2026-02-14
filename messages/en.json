@@ -62,6 +62,7 @@
     "deleteConfirm": "Really delete this tournament?",
     "deleteSuccess": "Tournament deleted",
     "activeEvent": "Current Tournament",
+    "latestEvent": "Latest Tournament",
     "pastEvents": "Past Tournaments",
     "viewEvent": "View Tournament",
     "manageEvent": "Manage Tournament"

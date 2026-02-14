@@ -62,6 +62,7 @@
     "deleteConfirm": "Turnier wirklich löschen?",
     "deleteSuccess": "Turnier gelöscht",
     "activeEvent": "Aktuelles Turnier",
+    "latestEvent": "Letztes Turnier",
     "pastEvents": "Vergangene Turniere",
     "viewEvent": "Turnier ansehen",
     "manageEvent": "Turnier verwalten"
