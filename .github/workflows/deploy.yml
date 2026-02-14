@@ -25,6 +25,10 @@ jobs:
             exit 1
           fi
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install Vercel CLI
         run: npm install -g vercel
 
@@ -43,6 +47,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install Vercel CLI
         run: npm install -g vercel
 
