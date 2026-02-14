@@ -5,10 +5,11 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Header, Footer } from '@/components/layout';
 import { Badge } from '@/components/ui/badge';
+import { BracketView } from '@/components/bracket/bracket-view';
 import { CurrentMatches } from '@/components/event/current-matches';
 import { EventStats } from '@/components/event/event-stats';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
-import type { Event, Team, Match } from '@/lib/db/schema';
+import type { Event, Team, Match, Round } from '@/lib/db/schema';
 
 function getModeLabel(
   mode: string,
@@ -44,19 +45,22 @@ function EventPageContent({ eventId }: { eventId: string }) {
   const [event, setEvent] = useState<Event | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
-      const [eventRes, teamsRes, matchesRes] = await Promise.all([
+      const [eventRes, teamsRes, matchesRes, roundsRes] = await Promise.all([
         fetch(`/api/events/${eventId}`),
         fetch(`/api/events/${eventId}/teams`),
         fetch(`/api/events/${eventId}/matches`),
+        fetch(`/api/events/${eventId}/rounds`),
       ]);
 
       if (eventRes.ok) setEvent(await eventRes.json());
       if (teamsRes.ok) setTeams(await teamsRes.json());
       if (matchesRes.ok) setMatches(await matchesRes.json());
+      if (roundsRes.ok) setRounds(await roundsRes.json());
     } catch {
       // Ignore fetch errors
     } finally {
@@ -138,6 +142,16 @@ function EventPageContent({ eventId }: { eventId: string }) {
           <EventStats matches={matches} teams={teams} />
 
           <CurrentMatches matches={matches} teams={teams} />
+
+          {rounds.length > 0 && matches.length > 0 && (
+            <BracketView
+              matches={matches}
+              rounds={rounds}
+              teams={teams}
+              mode={event.mode as 'single_elimination' | 'double_elimination' | 'group'}
+              isAdmin={false}
+            />
+          )}
         </main>
 
         <Footer />
