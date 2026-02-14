@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 config({ path: '.env.local' });
+config({ path: '.vercel/.env.production.local' });
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
