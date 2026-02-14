@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 
 export default function LoginPage() {
   const t = useTranslations('auth');
+  const locale = useLocale();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        window.location.href = '/admin';
+        window.location.href = `/${locale}/admin`;
         return;
       } else {
         setError(t('loginError'));
