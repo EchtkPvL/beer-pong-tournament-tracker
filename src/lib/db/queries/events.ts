@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { events, type NewEvent } from '@/lib/db/schema';
 
 export async function getAllEvents() {
-  return db.select().from(events).orderBy(desc(events.date));
+  return db.select().from(events).orderBy(desc(events.createdAt));
 }
 
 export async function getEventById(id: string) {

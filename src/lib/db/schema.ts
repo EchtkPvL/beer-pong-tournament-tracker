@@ -2,9 +2,9 @@ import { pgTable, text, integer, boolean, timestamp, json, unique } from 'drizzl
 
 export const events = pgTable('events', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  date: text('date').notNull(),
-  location: text('location').notNull(),
+  name: text('name').notNull().default(''),
+  date: text('date'),
+  location: text('location'),
   mode: text('mode', { enum: ['group', 'single_elimination', 'double_elimination'] }).notNull(),
   status: text('status', { enum: ['draft', 'active', 'completed'] }).notNull().default('draft'),
   tableCount: integer('table_count').notNull().default(1),

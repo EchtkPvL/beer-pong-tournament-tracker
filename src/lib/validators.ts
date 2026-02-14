@@ -5,10 +5,10 @@ export const loginSchema = z.object({
 });
 
 export const createEventSchema = z.object({
-  name: z.string().min(1).max(100),
-  date: z.string().min(1),
-  location: z.string().min(1).max(200),
-  mode: z.enum(['group', 'single_elimination', 'double_elimination']),
+  name: z.string().max(100).optional(),
+  date: z.string().optional(),
+  location: z.string().max(200).optional(),
+  mode: z.enum(['group', 'single_elimination', 'double_elimination']).default('single_elimination'),
   tableCount: z.number().int().min(1).max(20).default(1),
   groupCount: z.number().int().min(2).max(16).nullable().optional(),
   teamsAdvancePerGroup: z.number().int().min(1).max(8).nullable().optional(),

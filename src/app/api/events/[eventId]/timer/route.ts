@@ -49,12 +49,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           ...(durationSeconds && { durationSeconds, remainingSeconds: durationSeconds }),
         };
         break;
-      case 'pause':
+      case 'pause': {
+        let pauseRemaining = current?.remainingSeconds ?? 600;
+        if (current?.status === 'running' && current?.startedAt) {
+          const elapsed = (Date.now() - new Date(current.startedAt).getTime()) / 1000;
+          pauseRemaining = Math.max(0, Math.round(current.remainingSeconds - elapsed));
+        }
         timerData = {
           status: 'paused',
-          remainingSeconds: current?.remainingSeconds ?? 600,
+          remainingSeconds: pauseRemaining,
+          startedAt: null,
         };
         break;
+      }
       case 'stop':
         timerData = {
           status: 'stopped',

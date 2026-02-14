@@ -38,7 +38,7 @@ export function TimerControls({ eventId }: TimerControlsProps) {
   );
 
   const handleStart = () => {
-    sendAction('start', { durationSeconds: durationMinutes * 60 });
+    sendAction('start');
   };
 
   const handlePause = () => {

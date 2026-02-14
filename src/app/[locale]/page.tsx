@@ -100,20 +100,24 @@ export default async function HomePage() {
             <Card className="border-primary/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl">{activeEvent.name}</CardTitle>
+                  <CardTitle className="text-2xl">{activeEvent.name || t('title')}</CardTitle>
                   <StatusBadge status={activeEvent.status} labels={statusLabels} />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 md:grid-cols-4">
-                  <div>
-                    <span className="font-medium text-foreground">{t('date')}:</span>{' '}
-                    {activeEvent.date}
-                  </div>
-                  <div>
-                    <span className="font-medium text-foreground">{t('location')}:</span>{' '}
-                    {activeEvent.location}
-                  </div>
+                  {activeEvent.date && (
+                    <div>
+                      <span className="font-medium text-foreground">{t('date')}:</span>{' '}
+                      {activeEvent.date}
+                    </div>
+                  )}
+                  {activeEvent.location && (
+                    <div>
+                      <span className="font-medium text-foreground">{t('location')}:</span>{' '}
+                      {activeEvent.location}
+                    </div>
+                  )}
                   <div>
                     <span className="font-medium text-foreground">{t('mode')}:</span>{' '}
                     <ModeLabel mode={activeEvent.mode} labels={modeLabels} />
@@ -142,18 +146,22 @@ export default async function HomePage() {
                   <Card key={event.id}>
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{event.name}</CardTitle>
+                        <CardTitle className="text-lg">{event.name || t('title')}</CardTitle>
                         <StatusBadge status={event.status} labels={statusLabels} />
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-1 text-sm text-muted-foreground">
-                        <div>
-                          {t('date')}: {event.date}
-                        </div>
-                        <div>
-                          {t('location')}: {event.location}
-                        </div>
+                        {event.date && (
+                          <div>
+                            {t('date')}: {event.date}
+                          </div>
+                        )}
+                        {event.location && (
+                          <div>
+                            {t('location')}: {event.location}
+                          </div>
+                        )}
                         <div>
                           {t('mode')}: <ModeLabel mode={event.mode} labels={modeLabels} />
                         </div>
