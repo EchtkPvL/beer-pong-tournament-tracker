@@ -73,7 +73,8 @@ export function generateSingleEliminationBracket(
     for (let m = 0; m < matchCount; m++) {
       roundMatches.push({
         id: nanoid(),
-        matchNumber: m + 1,
+        matchNumber: 0,
+        scheduledRound: null,
         team1Id: null,
         team2Id: null,
         isBye: false,

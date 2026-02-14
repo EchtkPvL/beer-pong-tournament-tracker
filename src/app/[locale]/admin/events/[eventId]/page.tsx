@@ -440,99 +440,102 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                 {tMatches('noMatches')}
               </p>
             ) : (
-              <div className="space-y-2">
-                {matches
-                  .sort((a, b) => a.matchNumber - b.matchNumber)
-                  .map((match) => {
-                    const team1Name = getTeamName(match.team1Id);
-                    const team2Name = getTeamName(match.team2Id);
-                    const round = rounds.find((r) => r.id === match.roundId);
+              <div className="space-y-4">
+                {(() => {
+                  const scheduled = matches
+                    .filter((m) => !m.isBye && m.scheduledRound != null && m.scheduledRound > 0)
+                    .sort((a, b) => (a.scheduledRound ?? 0) - (b.scheduledRound ?? 0) || a.matchNumber - b.matchNumber);
 
-                    return (
-                      <button
-                        key={match.id}
-                        onClick={() => {
-                          if (
-                            match.team1Id &&
-                            match.team2Id &&
-                            !match.isBye
-                          ) {
-                            setSelectedMatch({
-                              id: match.id,
-                              matchNumber: match.matchNumber,
-                              team1Name,
-                              team2Name,
-                              team1Score: match.team1Score,
-                              team2Score: match.team2Score,
-                            });
-                            setResultDialogOpen(true);
-                          }
-                        }}
-                        disabled={
-                          !match.team1Id || !match.team2Id || match.isBye
-                        }
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-md border p-3 text-left text-sm transition-colors',
-                          match.team1Id &&
-                            match.team2Id &&
-                            !match.isBye &&
-                            'hover:bg-accent cursor-pointer',
-                          (!match.team1Id ||
-                            !match.team2Id ||
-                            match.isBye) &&
-                            'cursor-default opacity-60'
-                        )}
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                              {tBracket('matchNumber', {
-                                number: match.matchNumber,
-                              })}
-                            </span>
-                            {round && (
-                              <Badge variant="outline" className="text-xs">
-                                {round.name}
-                              </Badge>
-                            )}
-                          </div>
-                          <span className="font-medium">
-                            {match.isBye
-                              ? `${team1Name} (${tBracket('bye')})`
-                              : `${team1Name} ${tMatches('vs')} ${team2Name}`}
-                          </span>
-                        </div>
+                  // Group by playing round
+                  const byRound = new Map<number, typeof scheduled>();
+                  for (const m of scheduled) {
+                    const sr = m.scheduledRound ?? 0;
+                    if (!byRound.has(sr)) byRound.set(sr, []);
+                    byRound.get(sr)!.push(m);
+                  }
 
-                        <div className="flex items-center gap-2">
-                          {match.tableNumber && (
-                            <Badge variant="outline">
-                              {tBracket('table', {
-                                number: match.tableNumber,
-                              })}
-                            </Badge>
-                          )}
-                          {match.status === 'completed' &&
-                            match.team1Score !== null &&
-                            match.team2Score !== null && (
-                              <Badge variant="secondary">
-                                {match.team1Score} : {match.team2Score}
-                              </Badge>
-                            )}
-                          <Badge
-                            variant={
-                              match.status === 'completed'
-                                ? 'default'
-                                : match.status === 'in_progress'
-                                  ? 'secondary'
-                                  : 'outline'
-                            }
-                          >
-                            {getMatchStatusLabel(match.status)}
-                          </Badge>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  return [...byRound.entries()].map(([sr, roundMatches]) => (
+                    <div key={sr}>
+                      <h4 className="mb-2 text-sm font-semibold text-primary">
+                        {tBracket('playingRound', { number: sr })}
+                      </h4>
+                      <div className="space-y-1">
+                        {roundMatches.map((match) => {
+                          const team1Name = getTeamName(match.team1Id);
+                          const team2Name = getTeamName(match.team2Id);
+                          const round = rounds.find((r) => r.id === match.roundId);
+
+                          return (
+                            <button
+                              key={match.id}
+                              onClick={() => {
+                                if (match.team1Id && match.team2Id) {
+                                  setSelectedMatch({
+                                    id: match.id,
+                                    matchNumber: match.matchNumber,
+                                    team1Name,
+                                    team2Name,
+                                    team1Score: match.team1Score,
+                                    team2Score: match.team2Score,
+                                  });
+                                  setResultDialogOpen(true);
+                                }
+                              }}
+                              disabled={!match.team1Id || !match.team2Id}
+                              className={cn(
+                                'flex w-full items-center justify-between rounded-md border p-3 text-left text-sm transition-colors',
+                                match.team1Id && match.team2Id && 'hover:bg-accent cursor-pointer',
+                                (!match.team1Id || !match.team2Id) && 'cursor-default opacity-60'
+                              )}
+                            >
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    #{match.matchNumber}
+                                  </span>
+                                  {round && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {round.name}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="font-medium">
+                                  {team1Name} {tMatches('vs')} {team2Name}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {match.tableNumber != null && (
+                                  <Badge variant="outline">
+                                    {tBracket('table', { number: match.tableNumber })}
+                                  </Badge>
+                                )}
+                                {match.status === 'completed' &&
+                                  match.team1Score !== null &&
+                                  match.team2Score !== null && (
+                                    <Badge variant="secondary">
+                                      {match.team1Score} : {match.team2Score}
+                                    </Badge>
+                                  )}
+                                <Badge
+                                  variant={
+                                    match.status === 'completed'
+                                      ? 'default'
+                                      : match.status === 'in_progress'
+                                        ? 'secondary'
+                                        : 'outline'
+                                  }
+                                >
+                                  {getMatchStatusLabel(match.status)}
+                                </Badge>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
             )}
 

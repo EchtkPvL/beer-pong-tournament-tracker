@@ -9,6 +9,7 @@ import { generateSingleEliminationBracket } from '@/lib/tournament/single-elimin
 import { generateDoubleEliminationBracket } from '@/lib/tournament/double-elimination';
 import { generateGroupPhase } from '@/lib/tournament/group-phase';
 import { processByes } from '@/lib/tournament/match-progression';
+import { assignSchedule } from '@/lib/tournament/schedule';
 import { logEvent } from '@/lib/realtime/event-log';
 import type { TeamSeed } from '@/lib/tournament/types';
 
@@ -63,6 +64,9 @@ export async function POST(
         return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
     }
 
+    // Assign playing rounds based on table count
+    assignSchedule(bracket, event.tableCount);
+
     // Insert rounds
     for (const round of bracket.rounds) {
       await createRound({
@@ -86,6 +90,7 @@ export async function POST(
         team2Id: match.team2Id,
         isBye: match.isBye,
         status: 'pending',
+        scheduledRound: match.scheduledRound,
         bracketPosition: match.bracketPosition,
         nextMatchId: match.nextMatchId,
         loserNextMatchId: match.loserNextMatchId,

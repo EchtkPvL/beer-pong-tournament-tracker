@@ -59,11 +59,20 @@ export function MatchCard({ match, teams, onClick, isAdmin }: MatchCardProps) {
           : undefined
       }
     >
-      {/* Header with match number and status */}
+      {/* Header with match number, playing round, and status */}
       <div className="flex items-center justify-between border-b border-border px-2 py-1">
-        <span className="text-xs text-muted-foreground">
-          #{match.matchNumber}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {match.scheduledRound != null && match.scheduledRound > 0 && (
+            <span className="text-xs font-medium text-primary">
+              R{match.scheduledRound}
+            </span>
+          )}
+          {match.matchNumber > 0 && (
+            <span className="text-xs text-muted-foreground">
+              #{match.matchNumber}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1.5">
           {match.tableNumber !== null && (
             <span className="text-xs text-muted-foreground">

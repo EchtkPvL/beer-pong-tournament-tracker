@@ -1,6 +1,7 @@
 export interface BracketMatch {
   id: string;
   matchNumber: number;
+  scheduledRound: number | null;
   team1Id: string | null;
   team2Id: string | null;
   isBye: boolean;

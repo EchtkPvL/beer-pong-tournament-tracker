@@ -97,6 +97,8 @@
     "clearResult": "Ergebnis löschen",
     "clearResultConfirm": "Ergebnis wirklich löschen?",
     "matchNumber": "Spiel {number}",
+    "playingRound": "Runde {number}",
+    "currentRound": "Aktuelle Runde: {number}",
     "table": "Tisch {number}",
     "generateKnockout": "K.O.-Runde erstellen",
     "groupsNotComplete": "Alle Gruppenspiele müssen abgeschlossen sein",

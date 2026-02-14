@@ -97,6 +97,8 @@
     "clearResult": "Clear Result",
     "clearResultConfirm": "Really clear this result?",
     "matchNumber": "Match {number}",
+    "playingRound": "Round {number}",
+    "currentRound": "Current Round: {number}",
     "table": "Table {number}",
     "generateKnockout": "Generate Knockout Round",
     "groupsNotComplete": "All group matches must be completed first",

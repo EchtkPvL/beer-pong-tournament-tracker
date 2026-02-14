@@ -22,16 +22,33 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
   const tBeamer = useTranslations('beamer');
 
   const inProgress = matches.filter((m) => m.status === 'in_progress');
-  const upcoming = matches.filter(
-    (m) =>
-      (m.status === 'pending' || m.status === 'scheduled') &&
-      m.team1Id !== null &&
-      m.team2Id !== null &&
-      !m.isBye
-  );
+  const upcoming = matches
+    .filter(
+      (m) =>
+        (m.status === 'pending' || m.status === 'scheduled') &&
+        m.team1Id !== null &&
+        m.team2Id !== null &&
+        !m.isBye
+    )
+    .sort((a, b) => (a.scheduledRound ?? 0) - (b.scheduledRound ?? 0) || a.matchNumber - b.matchNumber);
+
+  // Determine the current playing round
+  const currentRound = inProgress.length > 0
+    ? inProgress[0].scheduledRound
+    : upcoming.length > 0
+      ? upcoming[0].scheduledRound
+      : null;
 
   return (
     <div className="space-y-6">
+      {currentRound != null && currentRound > 0 && (
+        <div className="rounded-lg bg-primary/10 px-4 py-3 text-center">
+          <span className="text-lg font-bold text-primary">
+            {tBracket('currentRound', { number: currentRound })}
+          </span>
+        </div>
+      )}
+
       <section>
         <h3 className="mb-3 text-lg font-semibold">{tBeamer('currentMatches')}</h3>
         {inProgress.length === 0 ? (
@@ -55,6 +72,11 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
+                  {match.scheduledRound != null && match.scheduledRound > 0 && (
+                    <Badge variant="secondary">
+                      {tBracket('playingRound', { number: match.scheduledRound })}
+                    </Badge>
+                  )}
                   {match.team1Score !== null && match.team2Score !== null && (
                     <span className="font-mono tabular-nums">
                       {match.team1Score} : {match.team2Score}
@@ -94,12 +116,17 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
+                  {match.scheduledRound != null && match.scheduledRound > 0 && (
+                    <Badge variant="secondary">
+                      {tBracket('playingRound', { number: match.scheduledRound })}
+                    </Badge>
+                  )}
                   {match.tableNumber !== null && (
                     <Badge variant="outline">
                       {tBracket('table', { number: match.tableNumber })}
                     </Badge>
                   )}
-                  <Badge variant="secondary">{t('pending')}</Badge>
+                  <Badge variant="outline">{t('pending')}</Badge>
                 </div>
               </li>
             ))}

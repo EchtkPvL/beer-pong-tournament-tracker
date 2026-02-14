@@ -49,6 +49,7 @@ export const matches = pgTable('matches', {
   isBye: boolean('is_bye').notNull().default(false),
   status: text('status', { enum: ['pending', 'scheduled', 'in_progress', 'completed'] }).notNull().default('pending'),
   tableNumber: integer('table_number'),
+  scheduledRound: integer('scheduled_round'),
   bracketPosition: text('bracket_position'),
   nextMatchId: text('next_match_id'),
   loserNextMatchId: text('loser_next_match_id'),

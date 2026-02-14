@@ -110,11 +110,8 @@ export function generateGroupPhase(
 
     // Distribute matches across rounds
     const teamsInGroup = teamIds.length;
-    const matchesPerRound = Math.floor(teamsInGroup / 2) + (teamsInGroup % 2 === 0 ? 0 : 0);
-    // Actually for round-robin: each round has n/2 matches (with possible bye)
     const actualMatchesPerRound = Math.ceil(teamsInGroup / 2);
 
-    let matchIdx = 0;
     let roundIdx = 0;
     let matchInRound = 0;
 
@@ -129,7 +126,8 @@ export function generateGroupPhase(
 
       matches.push({
         id: nanoid(),
-        matchNumber: matchIdx + 1,
+        matchNumber: 0,
+        scheduledRound: null,
         team1Id: team1Id,
         team2Id: team2Id,
         isBye,
@@ -140,7 +138,6 @@ export function generateGroupPhase(
         groupId,
       });
 
-      matchIdx++;
       matchInRound++;
     }
   }

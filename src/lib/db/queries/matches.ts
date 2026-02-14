@@ -16,6 +16,7 @@ type CreateMatchData = {
   isBye?: boolean;
   status?: 'pending' | 'scheduled' | 'in_progress' | 'completed';
   tableNumber?: number | null;
+  scheduledRound?: number | null;
   bracketPosition?: string | null;
   nextMatchId?: string | null;
   loserNextMatchId?: string | null;

@@ -56,13 +56,21 @@ function BeamerContent({ eventId }: { eventId: string }) {
   }, [fetchData]);
 
   const inProgress = matches.filter((m) => m.status === 'in_progress');
-  const upcoming = matches.filter(
-    (m) =>
-      (m.status === 'pending' || m.status === 'scheduled') &&
-      m.team1Id !== null &&
-      m.team2Id !== null &&
-      !m.isBye
-  );
+  const upcoming = matches
+    .filter(
+      (m) =>
+        (m.status === 'pending' || m.status === 'scheduled') &&
+        m.team1Id !== null &&
+        m.team2Id !== null &&
+        !m.isBye
+    )
+    .sort((a, b) => (a.scheduledRound ?? 0) - (b.scheduledRound ?? 0) || a.matchNumber - b.matchNumber);
+
+  const currentPlayingRound = inProgress.length > 0
+    ? inProgress[0].scheduledRound
+    : upcoming.length > 0
+      ? upcoming[0].scheduledRound
+      : null;
 
   if (loading) {
     return (
@@ -168,6 +176,15 @@ function BeamerContent({ eventId }: { eventId: string }) {
               <TimerDisplay eventId={eventId} large />
             </div>
 
+            {/* Current Playing Round */}
+            {currentPlayingRound != null && currentPlayingRound > 0 && (
+              <div className="rounded-lg border border-primary/50 bg-primary/10 px-4 py-3 text-center">
+                <span className="text-2xl font-bold text-primary">
+                  {tBracket('currentRound', { number: currentPlayingRound })}
+                </span>
+              </div>
+            )}
+
             {/* Current Matches */}
             <div>
               <h2 className="mb-3 text-lg font-semibold text-gray-300">
@@ -232,6 +249,11 @@ function BeamerContent({ eventId }: { eventId: string }) {
                       className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
                     >
                       <div className="flex items-center gap-2 text-sm">
+                        {match.scheduledRound != null && match.scheduledRound > 0 && (
+                          <span className="text-xs font-medium text-primary">
+                            R{match.scheduledRound}
+                          </span>
+                        )}
                         <span>{getTeamName(teams, match.team1Id)}</span>
                         <span className="text-gray-500">{tMatches('vs')}</span>
                         <span>{getTeamName(teams, match.team2Id)}</span>
