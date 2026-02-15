@@ -23,7 +23,17 @@ export function TimerControls({ eventId }: TimerControlsProps) {
       const res = await fetch(`/api/events/${eventId}/timer`);
       if (res.ok) {
         const data = await res.json();
-        setTimerStatus(data.status ?? 'stopped');
+        let status = data.status ?? 'stopped';
+
+        // If server says running but time has elapsed, treat as stopped
+        if (status === 'running' && data.startedAt) {
+          const elapsed = (Date.now() - new Date(data.startedAt).getTime()) / 1000;
+          if (data.remainingSeconds - elapsed <= 0) {
+            status = 'stopped';
+          }
+        }
+
+        setTimerStatus(status);
       }
     } catch {
       // Ignore
