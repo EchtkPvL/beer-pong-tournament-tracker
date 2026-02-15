@@ -15,6 +15,8 @@ function getTeamName(teams: Team[], teamId: string | null): string {
   return team?.name ?? 'TBD';
 }
 
+const CYCLE_MS = Number(process.env.NEXT_PUBLIC_BEAMER_CYCLE_MS) || 10000;
+
 function BeamerContent({ eventId }: { eventId: string }) {
   const t = useTranslations('beamer');
   const tMatches = useTranslations('matches');
@@ -82,12 +84,14 @@ function BeamerContent({ eventId }: { eventId: string }) {
     setCurrentPage(0);
   }, [phases.length]);
 
-  // Auto-advance every 10 seconds for double elimination
+  // Auto-advance for double elimination
+  const [cycleKey, setCycleKey] = useState(0);
   useEffect(() => {
     if (phases.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % phases.length);
-    }, 10000);
+      setCycleKey((k) => k + 1);
+    }, CYCLE_MS);
     return () => clearInterval(interval);
   }, [phases.length]);
 
@@ -163,7 +167,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
     <RealtimeProvider eventId={eventId} onEvent={handleRealtimeEvent}>
       <div className="flex h-screen flex-col overflow-hidden bg-gray-950 text-white">
         {/* Main content */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           {/* Left 70%: Bracket area */}
           <div className="flex w-[70%] flex-col border-r border-gray-800">
             {/* Phase label */}
@@ -205,7 +209,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
                 {phases.map((phase, i) => (
                   <button
                     key={phase}
-                    onClick={() => setCurrentPage(i)}
+                    onClick={() => { setCurrentPage(i); setCycleKey((k) => k + 1); }}
                     className={`h-2.5 w-2.5 rounded-full transition-colors ${
                       i === currentPage % phases.length
                         ? 'bg-primary'
@@ -331,6 +335,25 @@ function BeamerContent({ eventId }: { eventId: string }) {
             </div>
           </div>
         </div>
+
+        {/* Cycle progress bar */}
+        {phases.length > 1 && (
+          <div className="h-1 shrink-0 bg-gray-800">
+            <div
+              key={cycleKey}
+              className="h-full bg-primary/50"
+              style={{
+                animation: `beamer-progress ${CYCLE_MS}ms linear`,
+              }}
+            />
+            <style>{`
+              @keyframes beamer-progress {
+                from { width: 0%; }
+                to { width: 100%; }
+              }
+            `}</style>
+          </div>
+        )}
       </div>
     </RealtimeProvider>
   );
