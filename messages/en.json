@@ -67,7 +67,10 @@
     "viewEvent": "View Tournament",
     "manageEvent": "Manage Tournament",
     "openEventExists": "An open tournament already exists. Complete or delete it first.",
-    "completeRequiresAllMatches": "All matches must be completed before closing the tournament"
+    "completeRequiresAllMatches": "All matches must be completed before closing the tournament",
+    "settingsWarningTitle": "Warning: Tournament Reset",
+    "settingsWarningDescription": "Changing the tournament mode or group settings will regenerate the bracket. All existing match results will be lost.",
+    "matchCount": "{count, plural, one {# match} other {# matches}}"
   },
   "teams": {
     "title": "Teams",

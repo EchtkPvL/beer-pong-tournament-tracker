@@ -28,7 +28,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { TeamManager } from '@/components/admin/team-manager';
-import { BracketAdmin } from '@/components/admin/bracket-admin';
 import { MatchResultForm } from '@/components/admin/match-result-form';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { cn } from '@/lib/utils';
@@ -76,6 +75,10 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
   const [editTeamsAdvance, setEditTeamsAdvance] = useState<number | null>(null);
   const [editKnockoutMode, setEditKnockoutMode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showDestructiveWarning, setShowDestructiveWarning] = useState(false);
+
+  // Knockout generation state
+  const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
 
   const teamMap = new Map(teams.map((team) => [team.id, team]));
 
@@ -211,7 +214,32 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
-  const handleSaveSettings = async () => {
+  const handleGenerateKnockout = async () => {
+    setIsGeneratingKnockout(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/generate-knockout`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        await fetchData();
+      }
+    } finally {
+      setIsGeneratingKnockout(false);
+    }
+  };
+
+  // Detect if saving would be destructive (bracket regeneration)
+  const hasDestructiveChanges = (): boolean => {
+    if (!event || matches.length === 0) return false;
+    return (
+      event.mode !== editMode ||
+      event.groupCount !== editGroupCount ||
+      event.teamsAdvancePerGroup !== editTeamsAdvance ||
+      event.knockoutMode !== editKnockoutMode
+    );
+  };
+
+  const doSave = async () => {
     setSaving(true);
     try {
       const payload: Record<string, unknown> = {
@@ -245,6 +273,14 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
+  const handleSaveSettings = () => {
+    if (hasDestructiveChanges()) {
+      setShowDestructiveWarning(true);
+    } else {
+      doSave();
+    }
+  };
+
   const getStatusVariant = (
     status: string
   ): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -273,19 +309,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
-  const getModeLabel = (mode: string): string => {
-    switch (mode) {
-      case 'single_elimination':
-        return t('singleElimination');
-      case 'double_elimination':
-        return t('doubleElimination');
-      case 'group':
-        return t('group');
-      default:
-        return mode;
-    }
-  };
-
   const getMatchStatusLabel = (status: string): string => {
     switch (status) {
       case 'pending':
@@ -300,6 +323,12 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         return status;
     }
   };
+
+  // Group mode helpers
+  const isGroupMode = event?.mode === 'group';
+  const groupMatches = isGroupMode ? matches.filter(m => m.groupId && !m.isBye) : [];
+  const allGroupsDone = isGroupMode && groupMatches.length > 0 && groupMatches.every(m => m.status === 'completed');
+  const hasKnockoutRounds = isGroupMode && rounds.some(r => r.phase !== 'group');
 
   if (loading) {
     return (
@@ -338,138 +367,254 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         <TabsList className="mb-6 w-full justify-start">
           <TabsTrigger value="overview">{tAdmin('overview')}</TabsTrigger>
           <TabsTrigger value="teams">{tAdmin('teamsTab')}</TabsTrigger>
-          <TabsTrigger value="bracket">{tAdmin('bracketTab')}</TabsTrigger>
           <TabsTrigger value="matches">{tAdmin('matchesTab')}</TabsTrigger>
-          <TabsTrigger value="timer">{tAdmin('timerTab')}</TabsTrigger>
-          <TabsTrigger value="settings">{tAdmin('settingsTab')}</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
+        {/* Overview Tab - merged with Settings + Timer */}
         <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{tAdmin('overview')}</CardTitle>
-                <Badge variant={getStatusVariant(event.status)}>
-                  {getStatusLabel(event.status)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('name')}</p>
-                  <p className="font-medium">{event.name || '-'}</p>
+          <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+            {/* Left: Settings form */}
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle>{tAdmin('overview')}</CardTitle>
+                  <Badge variant={getStatusVariant(event.status)}>
+                    {getStatusLabel(event.status)}
+                  </Badge>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('date')}</p>
-                  <p className="font-medium">{event.date || '-'}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-name">{t('name')}</Label>
+                    <Input
+                      id="edit-name"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-date">{t('date')}</Label>
+                    <Input
+                      id="edit-date"
+                      type="date"
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-location">{t('location')}</Label>
+                    <Input
+                      id="edit-location"
+                      value={editLocation}
+                      onChange={(e) => setEditLocation(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-mode">{t('mode')}</Label>
+                    <Select
+                      value={editMode}
+                      onValueChange={(v) => setEditMode(v)}
+                    >
+                      <SelectTrigger id="edit-mode">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single_elimination">
+                          {t('singleElimination')}
+                        </SelectItem>
+                        <SelectItem value="double_elimination">
+                          {t('doubleElimination')}
+                        </SelectItem>
+                        <SelectItem value="group">{t('group')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="edit-tables">{t('tables')}</Label>
+                    <Input
+                      id="edit-tables"
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={editTableCount}
+                      onChange={(e) =>
+                        setEditTableCount(parseInt(e.target.value, 10) || 1)
+                      }
+                      className="w-24"
+                    />
+                  </div>
+
+                  {editMode === 'group' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-groups">{t('groupCount')}</Label>
+                        <Input
+                          id="edit-groups"
+                          type="number"
+                          min={2}
+                          max={16}
+                          value={editGroupCount ?? 2}
+                          onChange={(e) =>
+                            setEditGroupCount(parseInt(e.target.value, 10) || 2)
+                          }
+                          className="w-24"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-advance">
+                          {t('teamsAdvancePerGroup')}
+                        </Label>
+                        <Input
+                          id="edit-advance"
+                          type="number"
+                          min={1}
+                          max={8}
+                          value={editTeamsAdvance ?? 2}
+                          onChange={(e) =>
+                            setEditTeamsAdvance(parseInt(e.target.value, 10) || 1)
+                          }
+                          className="w-24"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-knockout">{t('knockoutMode')}</Label>
+                        <Select
+                          value={editKnockoutMode ?? 'single_elimination'}
+                          onValueChange={(v) => setEditKnockoutMode(v)}
+                        >
+                          <SelectTrigger id="edit-knockout">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="single_elimination">
+                              {t('singleElimination')}
+                            </SelectItem>
+                            <SelectItem value="double_elimination">
+                              {t('doubleElimination')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('location')}
-                  </p>
-                  <p className="font-medium">{event.location || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('mode')}</p>
-                  <p className="font-medium">{getModeLabel(event.mode)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('tables')}
-                  </p>
-                  <p className="font-medium">{event.tableCount}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Teams</p>
-                  <p className="font-medium">
-                    {t('teamCount', { count: teams.length })}
-                  </p>
-                </div>
-                {event.mode === 'group' && (
-                  <>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('groupCount')}
-                      </p>
-                      <p className="font-medium">{event.groupCount ?? '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('teamsAdvancePerGroup')}
-                      </p>
-                      <p className="font-medium">
-                        {event.teamsAdvancePerGroup ?? '-'}
-                      </p>
-                    </div>
-                  </>
+
+                {/* Generate Knockout button for group mode */}
+                {isGroupMode && !hasKnockoutRounds && matches.length > 0 && (
+                  <div className="flex items-center justify-between rounded-md border border-border p-3">
+                    <p className="text-sm text-muted-foreground">
+                      {allGroupsDone ? tBracket('generateKnockout') : tBracket('groupsNotComplete')}
+                    </p>
+                    <Button
+                      onClick={handleGenerateKnockout}
+                      disabled={!allGroupsDone || isGeneratingKnockout}
+                      size="sm"
+                    >
+                      {isGeneratingKnockout ? tCommon('loading') : tBracket('generateKnockout')}
+                    </Button>
+                  </div>
                 )}
-              </div>
 
-              <div className="flex flex-wrap gap-3 border-t pt-4">
-                <Button variant="outline" asChild>
-                  <Link href={`/events/${eventId}`}>
-                    {t('viewEvent')}
-                  </Link>
-                </Button>
-
-                {event.status === 'draft' && (
-                  <Button onClick={handleActivate}>{t('activate')}</Button>
-                )}
-
-                {event.status === 'active' && (
-                  <Button
-                    onClick={handleComplete}
-                    variant="secondary"
-                    disabled={!allMatchesPlayed}
-                    title={!allMatchesPlayed ? t('completeRequiresAllMatches') : undefined}
-                  >
-                    {t('complete')}
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-3 border-t pt-4">
+                  <Button onClick={handleSaveSettings} disabled={saving}>
+                    {saving ? tCommon('loading') : tCommon('save')}
                   </Button>
-                )}
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">{tCommon('delete')}</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{tCommon('delete')}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t('deleteConfirm')}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>
-                        {tCommon('cancel')}
-                      </AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
-                        {tCommon('confirm')}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </CardContent>
-          </Card>
+                  <Button variant="outline" asChild>
+                    <Link href={`/events/${eventId}`}>
+                      {t('viewEvent')}
+                    </Link>
+                  </Button>
+
+                  {event.status === 'draft' && (
+                    <Button onClick={handleActivate} variant="secondary">
+                      {t('activate')}
+                    </Button>
+                  )}
+
+                  {event.status === 'active' && (
+                    <Button
+                      onClick={handleComplete}
+                      variant="secondary"
+                      disabled={!allMatchesPlayed}
+                      title={!allMatchesPlayed ? t('completeRequiresAllMatches') : undefined}
+                    >
+                      {t('complete')}
+                    </Button>
+                  )}
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">{tCommon('delete')}</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{tCommon('delete')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('deleteConfirm')}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>
+                          {tCommon('cancel')}
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>
+                          {tCommon('confirm')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  {matches.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          {tBracket('regenerate')}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{tBracket('regenerate')}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {tBracket('regenerateConfirm')}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={generateBracket}>
+                            {tCommon('confirm')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Right: Timer */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">{tAdmin('timerTab')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TimerControls eventId={eventId} />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Teams Tab */}
         <TabsContent value="teams">
           <TeamManager eventId={eventId} initialTeams={teams} onTeamsChange={handleTeamsChange} />
-        </TabsContent>
-
-        {/* Bracket Tab */}
-        <TabsContent value="bracket">
-          <BracketAdmin
-            eventId={eventId}
-            event={event}
-            matches={matches}
-            rounds={rounds}
-            teams={teams}
-            onRefresh={fetchData}
-          />
         </TabsContent>
 
         {/* Matches Tab */}
@@ -513,7 +658,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                           {tBracket('playingRound', { number: sr })}
                         </h4>
                         <span className="text-xs text-muted-foreground">
-                          ({roundMatches.length} {roundMatches.length === 1 ? 'Spiel' : 'Spiele'})
+                          ({t('matchCount', { count: roundMatches.length })})
                         </span>
                         <div className="h-px flex-1 bg-border" />
                         {allDone && (
@@ -618,155 +763,25 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
             )}
           </div>
         </TabsContent>
-
-        {/* Timer Tab */}
-        <TabsContent value="timer">
-          <Card>
-            <CardHeader>
-              <CardTitle>{tAdmin('timerTab')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TimerControls eventId={eventId} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Settings Tab */}
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>{tAdmin('settingsTab')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">{t('name')}</Label>
-                <Input
-                  id="edit-name"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-date">{t('date')}</Label>
-                <Input
-                  id="edit-date"
-                  type="date"
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-location">{t('location')}</Label>
-                <Input
-                  id="edit-location"
-                  value={editLocation}
-                  onChange={(e) => setEditLocation(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-mode">{t('mode')}</Label>
-                <Select
-                  value={editMode}
-                  onValueChange={(v) => setEditMode(v)}
-                >
-                  <SelectTrigger id="edit-mode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="single_elimination">
-                      {t('singleElimination')}
-                    </SelectItem>
-                    <SelectItem value="double_elimination">
-                      {t('doubleElimination')}
-                    </SelectItem>
-                    <SelectItem value="group">{t('group')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-tables">{t('tables')}</Label>
-                <Input
-                  id="edit-tables"
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={editTableCount}
-                  onChange={(e) =>
-                    setEditTableCount(parseInt(e.target.value, 10) || 1)
-                  }
-                  className="w-24"
-                />
-              </div>
-
-              {editMode === 'group' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-groups">{t('groupCount')}</Label>
-                    <Input
-                      id="edit-groups"
-                      type="number"
-                      min={2}
-                      max={16}
-                      value={editGroupCount ?? 2}
-                      onChange={(e) =>
-                        setEditGroupCount(parseInt(e.target.value, 10) || 2)
-                      }
-                      className="w-24"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-advance">
-                      {t('teamsAdvancePerGroup')}
-                    </Label>
-                    <Input
-                      id="edit-advance"
-                      type="number"
-                      min={1}
-                      max={8}
-                      value={editTeamsAdvance ?? 2}
-                      onChange={(e) =>
-                        setEditTeamsAdvance(parseInt(e.target.value, 10) || 1)
-                      }
-                      className="w-24"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-knockout">{t('knockoutMode')}</Label>
-                    <Select
-                      value={editKnockoutMode ?? 'single_elimination'}
-                      onValueChange={(v) => setEditKnockoutMode(v)}
-                    >
-                      <SelectTrigger id="edit-knockout">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single_elimination">
-                          {t('singleElimination')}
-                        </SelectItem>
-                        <SelectItem value="double_elimination">
-                          {t('doubleElimination')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-
-              <div className="pt-2">
-                <Button onClick={handleSaveSettings} disabled={saving}>
-                  {saving ? tCommon('loading') : tCommon('save')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
+
+      {/* Destructive settings warning dialog */}
+      <AlertDialog open={showDestructiveWarning} onOpenChange={setShowDestructiveWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('settingsWarningTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('settingsWarningDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setShowDestructiveWarning(false); doSave(); }}>
+              {tCommon('confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
