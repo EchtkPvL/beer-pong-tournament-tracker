@@ -12,10 +12,19 @@ const commitSha = (() => {
   }
 })();
 
+const version = (() => {
+  try {
+    return execSync('git describe --tags --exact-match HEAD 2>/dev/null').toString().trim();
+  } catch {
+    return '';
+  }
+})();
+
 const nextConfig: NextConfig = {
   devIndicators: false,
   env: {
     NEXT_PUBLIC_COMMIT_SHA: commitSha,
+    NEXT_PUBLIC_VERSION: version,
   },
 };
 
