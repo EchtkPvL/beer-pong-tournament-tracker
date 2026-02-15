@@ -8,14 +8,15 @@ interface TeamSlotProps {
   isBye: boolean;
   isWinner: boolean;
   score: number | null;
+  feederLabel?: string;
 }
 
-export function TeamSlot({ team, isBye, isWinner, score }: TeamSlotProps) {
+export function TeamSlot({ team, isBye, isWinner, score, feederLabel }: TeamSlotProps) {
   const displayName = isBye
     ? 'Freilos'
     : team
       ? team.name
-      : 'TBD';
+      : feederLabel ?? 'TBD';
 
   return (
     <div

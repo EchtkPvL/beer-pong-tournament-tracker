@@ -1,6 +1,6 @@
 'use client';
 
-
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { Match, Team } from '@/lib/db/schema';
 import { TeamSlot } from './team-slot';
@@ -8,6 +8,7 @@ import { TeamSlot } from './team-slot';
 interface MatchCardProps {
   match: Match;
   teams: Record<string, Team>;
+  allMatches: Match[];
   onClick?: (match: Match) => void;
   isAdmin: boolean;
 }
@@ -19,9 +20,32 @@ const statusColors: Record<string, string> = {
   completed: 'bg-green-500',
 };
 
-export function MatchCard({ match, teams, onClick, isAdmin }: MatchCardProps) {
+export function MatchCard({ match, teams, allMatches, onClick, isAdmin }: MatchCardProps) {
+  const t = useTranslations('bracket');
   const team1 = match.team1Id ? teams[match.team1Id] ?? null : null;
   const team2 = match.team2Id ? teams[match.team2Id] ?? null : null;
+
+  // Compute feeder labels for empty team slots
+  const feeders = allMatches
+    .filter((m) => !m.isBye && m.nextMatchId === match.id)
+    .sort((a, b) => a.matchNumber - b.matchNumber);
+  const filledSlots = (match.team1Id ? 1 : 0) + (match.team2Id ? 1 : 0);
+
+  const getFeederLabel = (slot: 0 | 1): string | undefined => {
+    let feederIdx: number;
+    if (filledSlots === 1 && slot === 1) {
+      feederIdx = 0;
+    } else if (filledSlots === 0) {
+      feederIdx = slot;
+    } else {
+      return undefined;
+    }
+    const feeder = feeders[feederIdx];
+    if (feeder && feeder.matchNumber > 0) {
+      return t('winnerOfMatch', { number: feeder.matchNumber });
+    }
+    return undefined;
+  };
 
   const isClickable =
     isAdmin &&
@@ -94,12 +118,14 @@ export function MatchCard({ match, teams, onClick, isAdmin }: MatchCardProps) {
           isBye={match.isBye && !match.team1Id}
           isWinner={match.winnerId !== null && match.winnerId === match.team1Id}
           score={match.team1Score}
+          feederLabel={!match.team1Id ? getFeederLabel(0) : undefined}
         />
         <TeamSlot
           team={team2}
           isBye={match.isBye && !match.team2Id}
           isWinner={match.winnerId !== null && match.winnerId === match.team2Id}
           score={match.team2Score}
+          feederLabel={!match.team2Id ? getFeederLabel(1) : undefined}
         />
       </div>
     </div>

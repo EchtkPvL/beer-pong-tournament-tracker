@@ -7,6 +7,7 @@ import { MatchCard } from './match-card';
 interface RoundColumnProps {
   round: Round;
   matches: Match[];
+  allMatches: Match[];
   teams: Record<string, Team>;
   onMatchClick?: (match: Match) => void;
   isAdmin: boolean;
@@ -15,6 +16,7 @@ interface RoundColumnProps {
 export function RoundColumn({
   round,
   matches,
+  allMatches,
   teams,
   onMatchClick,
   isAdmin,
@@ -37,6 +39,7 @@ export function RoundColumn({
             key={match.id}
             match={match}
             teams={teams}
+            allMatches={allMatches}
             onClick={onMatchClick}
             isAdmin={isAdmin}
           />

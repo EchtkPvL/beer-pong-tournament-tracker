@@ -56,17 +56,23 @@ export function DoubleElimBracket({
     return { winnersRounds: winners, losersRounds: losers, finalsRounds: finals };
   }, [rounds]);
 
-  // Group matches by round
+  // Filter out bye matches for display
+  const visibleMatches = useMemo(
+    () => matches.filter((m) => !m.isBye),
+    [matches]
+  );
+
+  // Group visible matches by round
   const matchesByRound = useMemo(() => {
     const map: Record<string, Match[]> = {};
-    for (const match of matches) {
+    for (const match of visibleMatches) {
       if (!map[match.roundId]) {
         map[match.roundId] = [];
       }
       map[match.roundId].push(match);
     }
     return map;
-  }, [matches]);
+  }, [visibleMatches]);
 
   if (rounds.length === 0) {
     return (
@@ -79,33 +85,41 @@ export function DoubleElimBracket({
   const renderBracketSection = (
     sectionRounds: Round[],
     label: string
-  ) => (
-    <div>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </h3>
-      <div className="flex items-stretch gap-0">
-        {sectionRounds.map((round, index) => {
-          const roundMatches = matchesByRound[round.id] ?? [];
+  ) => {
+    const visible = sectionRounds.filter(
+      (r) => (matchesByRound[r.id] ?? []).length > 0
+    );
+    if (visible.length === 0) return null;
 
-          return (
-            <div key={round.id} className="flex items-stretch">
-              <RoundColumn
-                round={round}
-                matches={roundMatches}
-                teams={teamsMap}
-                onMatchClick={onMatchClick}
-                isAdmin={isAdmin}
-              />
-              {index < sectionRounds.length - 1 && (
-                <BracketConnector matchCount={roundMatches.length} />
-              )}
-            </div>
-          );
-        })}
+    return (
+      <div>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </h3>
+        <div className="flex items-stretch gap-0">
+          {visible.map((round, index) => {
+            const roundMatches = matchesByRound[round.id] ?? [];
+
+            return (
+              <div key={round.id} className="flex items-stretch">
+                <RoundColumn
+                  round={round}
+                  matches={roundMatches}
+                  allMatches={matches}
+                  teams={teamsMap}
+                  onMatchClick={onMatchClick}
+                  isAdmin={isAdmin}
+                />
+                {index < visible.length - 1 && (
+                  <BracketConnector matchCount={roundMatches.length} />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-8">

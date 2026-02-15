@@ -226,6 +226,7 @@ export function GroupPhaseView({
                         key={match.id}
                         match={match}
                         teams={teamsMap}
+                        allMatches={matches}
                         onClick={onMatchClick}
                         isAdmin={isAdmin}
                       />
