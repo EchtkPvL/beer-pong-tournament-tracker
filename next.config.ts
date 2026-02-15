@@ -8,11 +8,13 @@ const commitSha = (() => {
   try {
     return execSync('git rev-parse --short HEAD').toString().trim();
   } catch {
-    return '';
+    return (process.env.VERCEL_GIT_COMMIT_SHA ?? '').substring(0, 7);
   }
 })();
 
 const version = (() => {
+  // Fetch tags first — Vercel uses shallow clones that lack them
+  try { execSync('git fetch --tags --quiet', { stdio: 'ignore' }); } catch {}
   try {
     const tag = execSync('git tag --points-at HEAD').toString().trim();
     return tag.split('\n')[0] || '';
