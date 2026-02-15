@@ -19,6 +19,7 @@ interface Standing {
   pointsFor: number;
   pointsAgainst: number;
   pointDiff: number;
+  disqualified: boolean;
 }
 
 export function TeamStandings({ matches, teams }: TeamStandingsProps) {
@@ -28,7 +29,6 @@ export function TeamStandings({ matches, teams }: TeamStandingsProps) {
     const map = new Map<string, Standing>();
 
     for (const team of teams) {
-      if (team.status === 'disqualified') continue;
       map.set(team.id, {
         teamId: team.id,
         teamName: team.name,
@@ -38,6 +38,7 @@ export function TeamStandings({ matches, teams }: TeamStandingsProps) {
         pointsFor: 0,
         pointsAgainst: 0,
         pointDiff: 0,
+        disqualified: team.status === 'disqualified',
       });
     }
 
@@ -106,7 +107,7 @@ export function TeamStandings({ matches, teams }: TeamStandingsProps) {
               {standings.map((s, idx) => (
                 <tr
                   key={s.teamId}
-                  className="border-b border-border/50 last:border-0"
+                  className={`border-b border-border/50 last:border-0${s.disqualified ? ' opacity-60 line-through' : ''}`}
                 >
                   <td className="py-1.5 pr-2 text-muted-foreground">{idx + 1}</td>
                   <td className="py-1.5 pr-2 truncate max-w-[200px] font-medium">

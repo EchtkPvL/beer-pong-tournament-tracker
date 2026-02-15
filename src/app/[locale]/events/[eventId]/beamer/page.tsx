@@ -28,6 +28,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const t = useTranslations('beamer');
   const tMatches = useTranslations('matches');
   const tBracket = useTranslations('bracket');
+  const tStandings = useTranslations('standings');
   const tCommon = useTranslations('common');
 
   const [event, setEvent] = useState<Event | null>(null);
@@ -206,6 +207,28 @@ function BeamerContent({ eventId }: { eventId: string }) {
     }
   }
 
+  const allMatchesPlayed = playable.length > 0 && playable.every((m) => m.status === 'completed');
+
+  const standings = useMemo(() => {
+    if (!allMatchesPlayed) return [];
+    const map = new Map<string, { teamId: string; teamName: string; played: number; wins: number; losses: number; pointsFor: number; pointsAgainst: number; pointDiff: number; disqualified: boolean }>();
+    for (const team of teams) {
+      map.set(team.id, { teamId: team.id, teamName: team.name, played: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointDiff: 0, disqualified: team.status === 'disqualified' });
+    }
+    for (const match of matches) {
+      if (match.status !== 'completed' || !match.team1Id || !match.team2Id || match.isBye) continue;
+      const s1 = match.team1Score ?? 0;
+      const s2 = match.team2Score ?? 0;
+      const t1 = map.get(match.team1Id);
+      const t2 = map.get(match.team2Id);
+      if (t1) { t1.played++; t1.pointsFor += s1; t1.pointsAgainst += s2; if (match.winnerId === match.team1Id) t1.wins++; else t1.losses++; }
+      if (t2) { t2.played++; t2.pointsFor += s2; t2.pointsAgainst += s1; if (match.winnerId === match.team2Id) t2.wins++; else t2.losses++; }
+    }
+    const result = Array.from(map.values()).map((s) => ({ ...s, pointDiff: s.pointsFor - s.pointsAgainst }));
+    result.sort((a, b) => b.wins - a.wins || b.pointDiff - a.pointDiff || b.pointsFor - a.pointsFor);
+    return result;
+  }, [allMatchesPlayed, teams, matches]);
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-950 text-white">
@@ -294,110 +317,147 @@ function BeamerContent({ eventId }: { eventId: string }) {
               )}
             </div>
 
-            {/* Current Playing Round */}
-            {currentPlayingRound != null && currentPlayingRound > 0 && (
-              <div className="rounded-lg border border-primary/50 bg-primary/10 px-4 py-3 text-center">
-                <span className="text-2xl font-bold text-primary">
-                  {tBracket('currentRound', { number: currentPlayingRound })}
-                </span>
+            {allMatchesPlayed ? (
+              /* Final Standings */
+              <div>
+                <h2 className="mb-3 text-lg font-semibold text-gray-300">
+                  {tStandings('title')}
+                </h2>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700 text-left text-xs text-gray-400">
+                      <th className="pb-2 pr-2 font-medium">#</th>
+                      <th className="pb-2 pr-2 font-medium">{tStandings('team')}</th>
+                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('played')}</th>
+                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('wins')}</th>
+                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('losses')}</th>
+                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('pointDiff')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {standings.map((s, idx) => (
+                      <tr key={s.teamId} className={`border-b border-gray-800 last:border-0${s.disqualified ? ' opacity-60 line-through' : ''}`}>
+                        <td className="py-1.5 pr-2 text-gray-400">{idx + 1}</td>
+                        <td className="py-1.5 pr-2 truncate max-w-[200px] font-medium">{s.teamName}</td>
+                        <td className="py-1.5 pr-2 text-center">{s.played}</td>
+                        <td className="py-1.5 pr-2 text-center">{s.wins}</td>
+                        <td className="py-1.5 pr-2 text-center">{s.losses}</td>
+                        <td className="py-1.5 pr-2 text-center">
+                          {s.pointDiff > 0 ? `+${s.pointDiff}` : s.pointDiff}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
+            ) : (
+              <>
+                {/* Current Playing Round */}
+                {currentPlayingRound != null && currentPlayingRound > 0 && (
+                  <div className="rounded-lg border border-primary/50 bg-primary/10 px-4 py-3 text-center">
+                    <span className="text-2xl font-bold text-primary">
+                      {tBracket('currentRound', { number: currentPlayingRound })}
+                    </span>
+                  </div>
+                )}
 
-            {/* Current Matches */}
-            <div>
-              <h2 className="mb-3 text-lg font-semibold text-gray-300">
-                {t('currentMatches')}
-              </h2>
-              {inProgress.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  {t('noCurrentMatches')}
-                </p>
-              ) : (
-                <ul className="space-y-2">
-                  {inProgress.map((match) => (
-                    <li
-                      key={match.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-900 p-3"
-                    >
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className={`font-medium${isTeamDQ(teams, match.team1Id) ? ' line-through opacity-60' : ''}`}>
-                          {getTeamName(teams, match.team1Id)}
-                        </span>
-                        <span className="text-gray-500">{tMatches('vs')}</span>
-                        <span className={`font-medium${isTeamDQ(teams, match.team2Id) ? ' line-through opacity-60' : ''}`}>
-                          {getTeamName(teams, match.team2Id)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {match.team1Score !== null &&
-                          match.team2Score !== null && (
-                            <span className="font-mono text-sm tabular-nums">
-                              {match.team1Score}:{match.team2Score}
+                {/* Current Matches */}
+                <div>
+                  <h2 className="mb-3 text-lg font-semibold text-gray-300">
+                    {t('currentMatches')}
+                  </h2>
+                  {inProgress.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      {t('noCurrentMatches')}
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {inProgress.map((match) => (
+                        <li
+                          key={match.id}
+                          className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-900 p-3"
+                        >
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className={`font-medium${isTeamDQ(teams, match.team1Id) ? ' line-through opacity-60' : ''}`}>
+                              {getTeamName(teams, match.team1Id)}
                             </span>
-                          )}
-                        {match.tableNumber !== null && (
-                          <Badge
-                            variant="outline"
-                            className="border-gray-600 text-gray-300"
-                          >
-                            {tBracket('table', {
-                              number: match.tableNumber,
-                            })}
-                          </Badge>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* Next Matches (grouped by round) */}
-            <div>
-              <h2 className="mb-3 text-lg font-semibold text-gray-300">
-                {t('nextMatches')}
-              </h2>
-              {upcomingByRound.length === 0 ? (
-                <p className="text-sm text-gray-500">{tMatches('noMatches')}</p>
-              ) : (
-                <div className="space-y-4">
-                  {upcomingByRound.slice(0, 3).map(([round, roundMatches]) => (
-                    <div key={round}>
-                      {round > 0 && (
-                        <h3 className="mb-2 text-sm font-medium text-primary">
-                          {tBracket('playingRound', { number: round })}
-                          <span className="ml-2 text-xs text-gray-500">
-                            {tMatches('concurrent', { count: roundMatches.length })}
-                          </span>
-                        </h3>
-                      )}
-                      <ul className="space-y-2">
-                        {roundMatches.map((match) => (
-                          <li
-                            key={match.id}
-                            className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
-                          >
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className={isTeamDQ(teams, match.team1Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team1Id)}</span>
-                              <span className="text-gray-500">{tMatches('vs')}</span>
-                              <span className={isTeamDQ(teams, match.team2Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team2Id)}</span>
-                            </div>
+                            <span className="text-gray-500">{tMatches('vs')}</span>
+                            <span className={`font-medium${isTeamDQ(teams, match.team2Id) ? ' line-through opacity-60' : ''}`}>
+                              {getTeamName(teams, match.team2Id)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {match.team1Score !== null &&
+                              match.team2Score !== null && (
+                                <span className="font-mono text-sm tabular-nums">
+                                  {match.team1Score}:{match.team2Score}
+                                </span>
+                              )}
                             {match.tableNumber !== null && (
                               <Badge
                                 variant="outline"
-                                className="border-gray-700 text-gray-400"
+                                className="border-gray-600 text-gray-300"
                               >
-                                {tBracket('table', { number: match.tableNumber })}
+                                {tBracket('table', {
+                                  number: match.tableNumber,
+                                })}
                               </Badge>
                             )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              )}
-            </div>
+
+                {/* Next Matches (grouped by round) */}
+                <div>
+                  <h2 className="mb-3 text-lg font-semibold text-gray-300">
+                    {t('nextMatches')}
+                  </h2>
+                  {upcomingByRound.length === 0 ? (
+                    <p className="text-sm text-gray-500">{tMatches('noMatches')}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {upcomingByRound.slice(0, 3).map(([round, roundMatches]) => (
+                        <div key={round}>
+                          {round > 0 && (
+                            <h3 className="mb-2 text-sm font-medium text-primary">
+                              {tBracket('playingRound', { number: round })}
+                              <span className="ml-2 text-xs text-gray-500">
+                                {tMatches('concurrent', { count: roundMatches.length })}
+                              </span>
+                            </h3>
+                          )}
+                          <ul className="space-y-2">
+                            {roundMatches.map((match) => (
+                              <li
+                                key={match.id}
+                                className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
+                              >
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className={isTeamDQ(teams, match.team1Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team1Id)}</span>
+                                  <span className="text-gray-500">{tMatches('vs')}</span>
+                                  <span className={isTeamDQ(teams, match.team2Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team2Id)}</span>
+                                </div>
+                                {match.tableNumber !== null && (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-gray-700 text-gray-400"
+                                  >
+                                    {tBracket('table', { number: match.tableNumber })}
+                                  </Badge>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
