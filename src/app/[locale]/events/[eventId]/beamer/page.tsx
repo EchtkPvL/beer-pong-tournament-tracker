@@ -101,6 +101,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -113,7 +114,12 @@ function BeamerContent({ eventId }: { eventId: string }) {
       const sw = content.scrollWidth;
       const sh = content.scrollHeight;
       if (sw > 0 && sh > 0) {
-        setScale(Math.min(cw / sw, ch / sh, 1));
+        const s = Math.min(cw / sw, ch / sh);
+        setScale(s);
+        setOffset({
+          x: Math.max(0, (cw - sw * s) / 2),
+          y: Math.max(0, (ch - sh * s) / 2),
+        });
       }
     };
 
@@ -184,8 +190,11 @@ function BeamerContent({ eventId }: { eventId: string }) {
               {rounds.length > 0 && matches.length > 0 ? (
                 <div
                   ref={contentRef}
-                  className="origin-top-center inline-block p-4"
-                  style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+                  className="inline-block p-4"
+                  style={{
+                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                    transformOrigin: 'top left',
+                  }}
                 >
                   <BracketView
                     matches={matches}
