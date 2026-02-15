@@ -28,6 +28,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timerExpired, setTimerExpired] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -55,6 +56,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
 
   const handleRealtimeEvent = useCallback(() => {
     fetchData();
+    setTimerExpired(false);
   }, [fetchData]);
 
   const isDoubleElim = event?.mode === 'double_elimination';
@@ -235,7 +237,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
           <div className="flex w-[30%] flex-col gap-6 overflow-y-auto p-6">
             {/* Timer */}
             <div className="flex flex-col items-center gap-2">
-              <TimerDisplay eventId={eventId} large />
+              <TimerDisplay eventId={eventId} large onExpired={() => setTimerExpired(true)} />
             </div>
 
             {/* Current Playing Round */}
@@ -345,6 +347,16 @@ function BeamerContent({ eventId }: { eventId: string }) {
           </div>
         </div>
 
+        {/* Timer expired overlay */}
+        {timerExpired && (
+          <div
+            className="pointer-events-none fixed inset-0 z-50 animate-expired-flash rounded-none border-[6px] border-red-600"
+            onAnimationIteration={() => {
+              // Keep flashing indefinitely until admin resets
+            }}
+          />
+        )}
+
         {/* Cycle progress bar */}
         {phases.length > 1 && (
           <div className="h-1 shrink-0 bg-gray-800">
@@ -355,14 +367,22 @@ function BeamerContent({ eventId }: { eventId: string }) {
                 animation: `beamer-progress ${CYCLE_MS}ms linear`,
               }}
             />
-            <style>{`
-              @keyframes beamer-progress {
-                from { width: 0%; }
-                to { width: 100%; }
-              }
-            `}</style>
           </div>
         )}
+
+        <style>{`
+          @keyframes beamer-progress {
+            from { width: 0%; }
+            to { width: 100%; }
+          }
+          @keyframes expired-flash {
+            0%, 100% { opacity: 1; background-color: rgba(220, 38, 38, 0.25); }
+            50% { opacity: 0.3; background-color: rgba(220, 38, 38, 0); }
+          }
+          .animate-expired-flash {
+            animation: expired-flash 1s ease-in-out infinite;
+          }
+        `}</style>
       </div>
     </RealtimeProvider>
   );
