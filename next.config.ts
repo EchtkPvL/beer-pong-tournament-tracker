@@ -12,20 +12,10 @@ const commitSha = (() => {
   }
 })();
 
-const version = process.env.NEXT_PUBLIC_VERSION || (() => {
-  try {
-    const tag = execSync('git tag --points-at HEAD').toString().trim();
-    return tag.split('\n')[0] || '';
-  } catch {
-    return '';
-  }
-})();
-
 const nextConfig: NextConfig = {
   devIndicators: false,
   env: {
     NEXT_PUBLIC_COMMIT_SHA: commitSha,
-    NEXT_PUBLIC_VERSION: version,
   },
 };
 
