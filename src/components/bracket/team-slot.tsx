@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { Team } from '@/lib/db/schema';
 
@@ -12,11 +13,15 @@ interface TeamSlotProps {
 }
 
 export function TeamSlot({ team, isBye, isWinner, score, feederLabel }: TeamSlotProps) {
-  const displayName = isBye
-    ? 'Freilos'
-    : team
-      ? team.name
-      : feederLabel ?? 'TBD';
+  const t = useTranslations('bracket');
+
+  const displayName = team
+    ? team.name
+    : feederLabel
+      ? feederLabel
+      : isBye
+        ? t('bye')
+        : 'TBD';
 
   return (
     <div

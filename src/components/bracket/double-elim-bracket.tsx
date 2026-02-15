@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { Match, Round, Team } from '@/lib/db/schema';
-import { RoundColumn } from './round-column';
-import { BracketConnector } from './bracket-connector';
+import { buildMatchTree, MatchTreeView } from './match-tree';
 
 interface DoubleElimBracketProps {
   matches: Match[];
@@ -24,7 +23,6 @@ export function DoubleElimBracket({
 }: DoubleElimBracketProps) {
   const t = useTranslations('bracket');
 
-  // Build a lookup of teams by id
   const teamsMap = useMemo(() => {
     const map: Record<string, Team> = {};
     for (const team of teams) {
@@ -56,17 +54,59 @@ export function DoubleElimBracket({
     return { winnersRounds: winners, losersRounds: losers, finalsRounds: finals };
   }, [rounds]);
 
-  // Group matches by round
-  const matchesByRound = useMemo(() => {
-    const map: Record<string, Match[]> = {};
-    for (const match of matches) {
-      if (!map[match.roundId]) {
-        map[match.roundId] = [];
-      }
-      map[match.roundId].push(match);
+  // Build a set of round IDs per phase for fast lookup
+  const roundPhase = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of rounds) {
+      map.set(r.id, r.phase);
     }
     return map;
-  }, [matches]);
+  }, [rounds]);
+
+  // Partition matches by phase
+  const { winnersMatches, losersMatches, finalsMatches } = useMemo(() => {
+    const winners: Match[] = [];
+    const losers: Match[] = [];
+    const finals: Match[] = [];
+
+    for (const m of matches) {
+      const phase = roundPhase.get(m.roundId);
+      if (phase === 'winners') winners.push(m);
+      else if (phase === 'losers') losers.push(m);
+      else if (phase === 'finals') finals.push(m);
+    }
+
+    return { winnersMatches: winners, losersMatches: losers, finalsMatches: finals };
+  }, [matches, roundPhase]);
+
+  /**
+   * Find the root match of a section: the match whose nextMatchId is null
+   * or points to a match outside this section.
+   */
+  const findSectionRoot = (sectionMatches: Match[]): Match | undefined => {
+    const ids = new Set(sectionMatches.map((m) => m.id));
+    return sectionMatches.find(
+      (m) => !m.nextMatchId || !ids.has(m.nextMatchId)
+    );
+  };
+
+  const winnersTree = useMemo(() => {
+    const root = findSectionRoot(winnersMatches);
+    if (!root) return null;
+    return buildMatchTree(winnersMatches, root.id);
+  }, [winnersMatches]);
+
+  const losersTree = useMemo(() => {
+    const root = findSectionRoot(losersMatches);
+    if (!root) return null;
+    return buildMatchTree(losersMatches, root.id);
+  }, [losersMatches]);
+
+  const finalsTree = useMemo(() => {
+    const root = findSectionRoot(finalsMatches);
+    if (!root) return null;
+    return buildMatchTree(finalsMatches, root.id);
+  }, [finalsMatches]);
 
   if (rounds.length === 0) {
     return (
@@ -76,65 +116,64 @@ export function DoubleElimBracket({
     );
   }
 
-  const renderBracketSection = (
-    sectionRounds: Round[],
-    label: string
-  ) => {
-    const visible = sectionRounds.filter(
-      (r) => (matchesByRound[r.id] ?? []).length > 0
-    );
-    if (visible.length === 0) return null;
-
-    return (
-      <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {label}
-        </h3>
-        <div className="flex items-stretch gap-0">
-          {visible.map((round, index) => {
-            const roundMatches = matchesByRound[round.id] ?? [];
-
-            return (
-              <div key={round.id} className="flex items-stretch">
-                <RoundColumn
-                  round={round}
-                  matches={roundMatches}
-                  allMatches={matches}
-                  teams={teamsMap}
-                  onMatchClick={onMatchClick}
-                  isAdmin={isAdmin}
-                />
-                {index < visible.length - 1 && (
-                  <BracketConnector matchCount={roundMatches.length} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col gap-8">
       {/* Winners Bracket */}
-      {winnersRounds.length > 0 &&
-        renderBracketSection(winnersRounds, t('winnersBracket'))}
+      {winnersTree && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('winnersBracket')}
+          </h3>
+          <MatchTreeView
+            allMatches={matches}
+            root={winnersTree}
+            rounds={winnersRounds}
+            teams={teamsMap}
+            onMatchClick={onMatchClick}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
 
       {/* Divider */}
-      {winnersRounds.length > 0 && losersRounds.length > 0 && (
+      {winnersTree && losersTree && (
         <div className="border-t-2 border-dashed border-border" />
       )}
 
       {/* Losers Bracket */}
-      {losersRounds.length > 0 &&
-        renderBracketSection(losersRounds, t('losersBracket'))}
+      {losersTree && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('losersBracket')}
+          </h3>
+          <MatchTreeView
+            allMatches={matches}
+            root={losersTree}
+            rounds={losersRounds}
+            teams={teamsMap}
+            onMatchClick={onMatchClick}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
 
       {/* Grand Finals */}
-      {finalsRounds.length > 0 && (
+      {finalsTree && (
         <>
           <div className="border-t-2 border-dashed border-border" />
-          {renderBracketSection(finalsRounds, t('grandFinals'))}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('grandFinals')}
+            </h3>
+            <MatchTreeView
+              allMatches={matches}
+              root={finalsTree}
+              rounds={finalsRounds}
+              teams={teamsMap}
+              onMatchClick={onMatchClick}
+              isAdmin={isAdmin}
+            />
+          </div>
         </>
       )}
     </div>
