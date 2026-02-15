@@ -541,14 +541,33 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   )}
 
                   {event.status === 'active' && (
-                    <Button
-                      onClick={handleComplete}
-                      variant="secondary"
-                      disabled={!allMatchesPlayed}
-                      title={!allMatchesPlayed ? t('completeRequiresAllMatches') : undefined}
-                    >
-                      {t('complete')}
-                    </Button>
+                    allMatchesPlayed ? (
+                      <Button onClick={handleComplete} variant="secondary">
+                        {t('complete')}
+                      </Button>
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="secondary">
+                            {t('complete')}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t('complete')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t('archiveConfirm')}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleComplete}>
+                              {tCommon('confirm')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )
                   )}
 
                   <AlertDialog>

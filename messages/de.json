@@ -67,7 +67,7 @@
     "viewEvent": "Turnier ansehen",
     "manageEvent": "Turnier verwalten",
     "openEventExists": "Es gibt bereits ein offenes Turnier. Schließe oder lösche es zuerst.",
-    "completeRequiresAllMatches": "Alle Spiele müssen abgeschlossen sein, bevor das Turnier beendet werden kann",
+    "archiveConfirm": "Nicht alle Spiele wurden gespielt. Möchtest du das Turnier wirklich beenden?",
     "settingsWarningTitle": "Achtung: Turnier wird zurückgesetzt",
     "settingsWarningDescription": "Änderungen am Turniermodus oder den Gruppeneinstellungen erstellen den Spielplan neu. Alle bisherigen Ergebnisse gehen verloren.",
     "matchCount": "{count, plural, one {# Spiel} other {# Spiele}}"
