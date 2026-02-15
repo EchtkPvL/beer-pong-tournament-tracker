@@ -5,39 +5,14 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
 import { TimerDisplay } from '@/components/timer/timer-display';
+import { BracketView } from '@/components/bracket/bracket-view';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import type { Event, Team, Match, Round } from '@/lib/db/schema';
 
 function getTeamName(teams: Team[], teamId: string | null): string {
   if (!teamId) return 'TBD';
   const team = teams.find((t) => t.id === teamId);
   return team?.name ?? 'TBD';
-}
-
-function getFeederMatchNumber(
-  matches: Match[],
-  matchId: string,
-  slot: 0 | 1
-): number | null {
-  const feeders = matches
-    .filter((m) => !m.isBye && m.nextMatchId === matchId)
-    .sort((a, b) => a.matchNumber - b.matchNumber);
-
-  const match = matches.find((m) => m.id === matchId);
-  const filledSlots = (match?.team1Id ? 1 : 0) + (match?.team2Id ? 1 : 0);
-
-  let feederIdx: number;
-  if (filledSlots === 1 && slot === 1) {
-    feederIdx = 0;
-  } else if (filledSlots === 0) {
-    feederIdx = slot;
-  } else {
-    feederIdx = 0;
-  }
-
-  const feeder = feeders[feederIdx];
-  return feeder && feeder.matchNumber > 0 ? feeder.matchNumber : null;
 }
 
 function BeamerContent({ eventId }: { eventId: string }) {
@@ -116,91 +91,18 @@ function BeamerContent({ eventId }: { eventId: string }) {
         {/* Main content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left 70%: Bracket area */}
-          <div className="flex w-[70%] items-center justify-center overflow-hidden border-r border-gray-800 p-4">
-            <div
-              className="origin-center"
-              style={{ transform: 'scale(0.75)' }}
-            >
-              {rounds.length > 0 && matches.length > 0 ? (
-                <div className="flex gap-8">
-                  {rounds
-                    .sort((a, b) => a.roundNumber - b.roundNumber)
-                    .filter((round) =>
-                      matches.some((m) => m.roundId === round.id && !m.isBye)
-                    )
-                    .map((round) => {
-                      const roundMatches = matches
-                        .filter((m) => m.roundId === round.id && !m.isBye)
-                        .sort((a, b) => a.matchNumber - b.matchNumber);
-
-                      return (
-                        <div key={round.id} className="flex flex-col gap-4">
-                          <h3 className="text-center text-sm font-semibold text-gray-400">
-                            {round.name}
-                          </h3>
-                          <div className="flex flex-col justify-around gap-4 flex-1">
-                            {roundMatches.map((match) => (
-                              <div
-                                key={match.id}
-                                className={cn(
-                                  'min-w-[200px] rounded border border-gray-700 bg-gray-900',
-                                  match.status === 'in_progress' &&
-                                    'border-yellow-500'
-                                )}
-                              >
-                                <div
-                                  className={cn(
-                                    'flex items-center justify-between border-b border-gray-700 px-3 py-1.5 text-sm',
-                                    match.winnerId === match.team1Id &&
-                                      match.winnerId &&
-                                      'font-bold text-green-400'
-                                  )}
-                                >
-                                  <span className="truncate">
-                                    {match.team1Id
-                                      ? getTeamName(teams, match.team1Id)
-                                      : (getFeederMatchNumber(matches, match.id, 0) != null
-                                        ? tBracket('winnerOfMatch', { number: getFeederMatchNumber(matches, match.id, 0)! })
-                                        : 'TBD')}
-                                  </span>
-                                  {match.team1Score !== null && (
-                                    <span className="ml-2 tabular-nums">
-                                      {match.team1Score}
-                                    </span>
-                                  )}
-                                </div>
-                                <div
-                                  className={cn(
-                                    'flex items-center justify-between px-3 py-1.5 text-sm',
-                                    match.winnerId === match.team2Id &&
-                                      match.winnerId &&
-                                      'font-bold text-green-400'
-                                  )}
-                                >
-                                  <span className="truncate">
-                                    {match.team2Id
-                                      ? getTeamName(teams, match.team2Id)
-                                      : (getFeederMatchNumber(matches, match.id, 1) != null
-                                        ? tBracket('winnerOfMatch', { number: getFeederMatchNumber(matches, match.id, 1)! })
-                                        : 'TBD')}
-                                  </span>
-                                  {match.team2Score !== null && (
-                                    <span className="ml-2 tabular-nums">
-                                      {match.team2Score}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="text-gray-500">{tBracket('noMatches')}</p>
-              )}
-            </div>
+          <div className="flex w-[70%] items-center justify-center overflow-auto border-r border-gray-800 p-4">
+            {rounds.length > 0 && matches.length > 0 ? (
+              <BracketView
+                matches={matches}
+                rounds={rounds}
+                teams={teams}
+                mode={(event?.mode as 'single_elimination' | 'double_elimination' | 'group') ?? 'single_elimination'}
+                isAdmin={false}
+              />
+            ) : (
+              <p className="text-gray-500">{tBracket('noMatches')}</p>
+            )}
           </div>
 
           {/* Right 30%: Timer, current & next matches */}
