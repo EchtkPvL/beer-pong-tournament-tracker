@@ -59,27 +59,20 @@ async function placeTeamInMatch(matchId: string, teamId: string): Promise<void> 
     await db.update(matches).set({ team1Id: teamId }).where(eq(matches.id, matchId));
   } else if (!match.team2Id) {
     await db.update(matches).set({ team2Id: teamId }).where(eq(matches.id, matchId));
-
-    // If both teams are now set and one needs auto-advance (bye check not needed here for progressed matches)
   }
 
-  // Check if this creates a bye scenario (only one team + the other slot from a bye match)
-  const updatedMatch = await db.select().from(matches).where(eq(matches.id, matchId)).then(r => r[0]);
-  if (updatedMatch) {
-    // Check if all feeder matches for this match are completed
-    const feeders = await db.select().from(matches)
-      .where(
-        or(
-          eq(matches.nextMatchId, matchId),
-          eq(matches.loserNextMatchId, matchId)
-        )
-      );
+  // Auto-advance for bye matches: when a team arrives in a bye slot,
+  // immediately complete it and advance to the next match
+  if (match.isBye) {
+    await db.update(matches).set({
+      winnerId: teamId,
+      team1Score: 0,
+      team2Score: 0,
+      status: 'completed',
+    }).where(eq(matches.id, matchId));
 
-    const allFeedersCompleted = feeders.length > 0 && feeders.every(f => f.status === 'completed');
-
-    if (allFeedersCompleted && updatedMatch.team1Id && !updatedMatch.team2Id) {
-      // Only one team arrived and all feeders done - this is effectively a bye
-      // Don't auto-complete, the team just waits
+    if (match.nextMatchId) {
+      await placeTeamInMatch(match.nextMatchId, teamId);
     }
   }
 }

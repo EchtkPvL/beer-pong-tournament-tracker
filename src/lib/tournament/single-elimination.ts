@@ -1,12 +1,6 @@
 import { nanoid } from 'nanoid';
 import type { GeneratedBracket, TeamSeed, BracketMatch, BracketRound } from './types';
 
-function nextPowerOf2(n: number): number {
-  let p = 1;
-  while (p < n) p *= 2;
-  return p;
-}
-
 function getRoundName(roundsTotal: number, roundIndex: number): string {
   const remaining = roundsTotal - roundIndex;
   if (remaining === 1) return 'Finale';
@@ -16,28 +10,14 @@ function getRoundName(roundsTotal: number, roundIndex: number): string {
   return `Runde ${roundIndex + 1}`;
 }
 
-/**
- * Standard seeding: 1v16, 8v9, 5v12, 4v13, 3v14, 6v11, 7v10, 2v15
- * Ensures top seeds are spread and get byes first
- */
-function generateSeedOrder(bracketSize: number): number[] {
-  if (bracketSize === 1) return [1];
-  if (bracketSize === 2) return [1, 2];
-
-  const rounds = Math.log2(bracketSize);
-  let seeds = [1, 2];
-
-  for (let round = 1; round < rounds; round++) {
-    const newSeeds: number[] = [];
-    const sum = Math.pow(2, round + 1) + 1;
-    for (const seed of seeds) {
-      newSeeds.push(seed);
-      newSeeds.push(sum - seed);
-    }
-    seeds = newSeeds;
+/** Fisher-Yates shuffle for random team order */
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
   }
-
-  return seeds;
+  return result;
 }
 
 export function generateSingleEliminationBracket(
@@ -48,9 +28,17 @@ export function generateSingleEliminationBracket(
     throw new Error('Need at least 2 teams');
   }
 
-  const bracketSize = nextPowerOf2(teams.length);
-  const totalRounds = Math.log2(bracketSize);
-  const seedOrder = generateSeedOrder(bracketSize);
+  const shuffled = shuffle(teams);
+  const n = shuffled.length;
+
+  // Compute how many teams enter each round
+  const teamsPerRound: number[] = [];
+  let remaining = n;
+  while (remaining > 1) {
+    teamsPerRound.push(remaining);
+    remaining = Math.ceil(remaining / 2);
+  }
+  const totalRounds = teamsPerRound.length;
 
   // Create rounds
   const rounds: BracketRound[] = [];
@@ -63,13 +51,16 @@ export function generateSingleEliminationBracket(
     });
   }
 
-  // Create all matches for each round
+  // Create matches for each round.
+  // Real matches come first, bye match (if any) is last in the array.
   const allMatches: BracketMatch[][] = [];
 
   for (let r = 0; r < totalRounds; r++) {
-    const matchCount = bracketSize / Math.pow(2, r + 1);
-    const roundMatches: BracketMatch[] = [];
+    const teamCount = teamsPerRound[r];
+    const matchCount = Math.floor(teamCount / 2);
+    const hasBye = teamCount % 2 === 1;
 
+    const roundMatches: BracketMatch[] = [];
     for (let m = 0; m < matchCount; m++) {
       roundMatches.push({
         id: nanoid(),
@@ -86,50 +77,71 @@ export function generateSingleEliminationBracket(
       });
     }
 
+    if (hasBye) {
+      roundMatches.push({
+        id: nanoid(),
+        matchNumber: 0,
+        scheduledRound: null,
+        team1Id: null,
+        team2Id: null,
+        isBye: true,
+        bracketPosition: `W-R${r + 1}-BYE`,
+        nextMatchId: null,
+        loserNextMatchId: null,
+        roundId: rounds[r].id,
+        groupId: null,
+      });
+    }
+
     allMatches.push(roundMatches);
   }
 
-  // Link matches: winner of match m in round r goes to match floor(m/2) in round r+1
+  // Link matches across rounds.
+  //
+  // When a round has a bye, use interleaving so the bye team PLAYS in the
+  // next round instead of getting repeated byes:
+  //   Advancing order: [w(M0), bye_team, w(M1), w(M2), …, w(M_last)]
+  //   - M0   → next_match[0]        (slot 1)
+  //   - bye  → next_match[0]        (slot 2, plays against M0 winner)
+  //   - M_m (m≥1) → next_match[⌊(m+1)/2⌋]
+  //   - Last match winner may land in the next round's bye slot
+  //
+  // Without a bye, standard pairing: M_m → next_match[⌊m/2⌋]
+
   for (let r = 0; r < totalRounds - 1; r++) {
-    for (let m = 0; m < allMatches[r].length; m++) {
-      const nextMatchIndex = Math.floor(m / 2);
-      allMatches[r][m].nextMatchId = allMatches[r + 1][nextMatchIndex].id;
-    }
-  }
+    const teamCount = teamsPerRound[r];
+    const matchCount = Math.floor(teamCount / 2);
+    const hasBye = teamCount % 2 === 1;
+    const nextRound = allMatches[r + 1];
 
-  // Seed teams into first round
-  // Sort teams by seed (or order given)
-  const sortedTeams = [...teams].sort((a, b) => (a.seed || 999) - (b.seed || 999));
+    if (hasBye) {
+      // M0 and bye both feed into the first match of next round
+      allMatches[r][0].nextMatchId = nextRound[0].id;
+      allMatches[r][matchCount].nextMatchId = nextRound[0].id; // bye match
 
-  // Map seed positions to team slots
-  for (let i = 0; i < bracketSize; i++) {
-    const seedPos = seedOrder[i]; // 1-indexed seed position
-    const team = seedPos <= sortedTeams.length ? sortedTeams[seedPos - 1] : null;
-
-    // Map to first round match: position i goes to match floor(i/2), slot i%2
-    const matchIndex = Math.floor(i / 2);
-    const match = allMatches[0][matchIndex];
-
-    if (i % 2 === 0) {
-      match.team1Id = team?.id || null;
+      for (let m = 1; m < matchCount; m++) {
+        const nextIdx = Math.floor((m + 1) / 2);
+        allMatches[r][m].nextMatchId = nextRound[nextIdx].id;
+      }
     } else {
-      match.team2Id = team?.id || null;
+      for (let m = 0; m < matchCount; m++) {
+        allMatches[r][m].nextMatchId = nextRound[Math.floor(m / 2)].id;
+      }
     }
   }
 
-  // Handle byes: if a match has only one team, mark as bye and auto-advance
-  for (const match of allMatches[0]) {
-    if (match.team1Id && !match.team2Id) {
-      match.isBye = true;
-    } else if (!match.team1Id && match.team2Id) {
-      match.isBye = true;
-    } else if (!match.team1Id && !match.team2Id) {
-      // Both empty - this shouldn't happen with proper seeding but handle it
-      match.isBye = true;
-    }
+  // Assign shuffled teams to first round
+  const firstRoundMatchCount = Math.floor(n / 2);
+
+  for (let m = 0; m < firstRoundMatchCount; m++) {
+    allMatches[0][m].team1Id = shuffled[m * 2].id;
+    allMatches[0][m].team2Id = shuffled[m * 2 + 1].id;
   }
 
-  const flatMatches = allMatches.flat();
+  // Odd team count → last team gets the first-round bye
+  if (n % 2 === 1) {
+    allMatches[0][firstRoundMatchCount].team1Id = shuffled[n - 1].id;
+  }
 
-  return { rounds, matches: flatMatches };
+  return { rounds, matches: allMatches.flat() };
 }
