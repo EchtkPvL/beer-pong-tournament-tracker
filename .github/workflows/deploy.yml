@@ -58,6 +58,12 @@ jobs:
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Push database schema
+        run: npx drizzle-kit push --force
+
       - name: Build
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
