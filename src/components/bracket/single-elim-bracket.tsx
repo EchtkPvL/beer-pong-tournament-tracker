@@ -57,6 +57,12 @@ export function SingleElimBracket({
     return map;
   }, [visibleMatches]);
 
+  // Filter out rounds with no visible matches (only byes)
+  const visibleRounds = useMemo(
+    () => sortedRounds.filter((r) => (matchesByRound[r.id] ?? []).length > 0),
+    [sortedRounds, matchesByRound]
+  );
+
   if (sortedRounds.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
@@ -64,12 +70,6 @@ export function SingleElimBracket({
       </div>
     );
   }
-
-  // Filter out rounds with no visible matches (only byes)
-  const visibleRounds = useMemo(
-    () => sortedRounds.filter((r) => (matchesByRound[r.id] ?? []).length > 0),
-    [sortedRounds, matchesByRound]
-  );
 
   return (
     <div className="flex items-stretch gap-0">
