@@ -14,7 +14,8 @@ const commitSha = (() => {
 
 const version = (() => {
   try {
-    return execSync('git describe --tags --exact-match HEAD 2>/dev/null').toString().trim();
+    const tag = execSync('git tag --points-at HEAD').toString().trim();
+    return tag.split('\n')[0] || '';
   } catch {
     return '';
   }
