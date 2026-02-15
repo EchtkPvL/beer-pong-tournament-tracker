@@ -65,7 +65,7 @@ export default async function HomePage() {
       location: events.location,
       mode: events.mode,
       status: events.status,
-      teamCount: sql<number>`(SELECT count(*) FROM teams WHERE teams.event_id = ${events.id})`.as(
+      teamCount: sql<number>`(SELECT count(*) FROM teams WHERE teams.event_id = "events"."id")`.as(
         'team_count'
       ),
     })
