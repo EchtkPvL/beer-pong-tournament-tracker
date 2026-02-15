@@ -73,7 +73,6 @@ export function generateSingleEliminationBracket(
         nextMatchId: null,
         loserNextMatchId: null,
         roundId: rounds[r].id,
-        groupId: null,
       });
     }
 
@@ -89,7 +88,6 @@ export function generateSingleEliminationBracket(
         nextMatchId: null,
         loserNextMatchId: null,
         roundId: rounds[r].id,
-        groupId: null,
       });
     }
 

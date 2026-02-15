@@ -31,11 +31,9 @@ function getStatusVariant(status: string) {
 
 function getModeLabel(
   mode: string,
-  labels: { group: string; singleElimination: string; doubleElimination: string }
+  labels: { singleElimination: string; doubleElimination: string }
 ) {
   switch (mode) {
-    case 'group':
-      return labels.group;
     case 'single_elimination':
       return labels.singleElimination;
     case 'double_elimination':
@@ -55,7 +53,6 @@ export function EventCard({ event }: EventCardProps) {
   };
 
   const modeLabels = {
-    group: t('group'),
     singleElimination: t('singleElimination'),
     doubleElimination: t('doubleElimination'),
   };

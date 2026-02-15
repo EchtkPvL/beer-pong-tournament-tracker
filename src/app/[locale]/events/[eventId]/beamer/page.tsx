@@ -109,7 +109,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
                 matches={matches}
                 rounds={rounds}
                 teams={teams}
-                mode={(event?.mode as 'single_elimination' | 'double_elimination' | 'group') ?? 'single_elimination'}
+                mode={(event?.mode as 'single_elimination' | 'double_elimination') ?? 'single_elimination'}
                 isAdmin={false}
               />
             ) : (

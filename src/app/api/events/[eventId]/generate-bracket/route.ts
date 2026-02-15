@@ -7,7 +7,6 @@ import { deleteRoundsByEvent, createRound } from '@/lib/db/queries/rounds';
 import { createMatch } from '@/lib/db/queries/matches';
 import { generateSingleEliminationBracket } from '@/lib/tournament/single-elimination';
 import { generateDoubleEliminationBracket } from '@/lib/tournament/double-elimination';
-import { generateGroupPhase } from '@/lib/tournament/group-phase';
 import { processByes } from '@/lib/tournament/match-progression';
 import { assignSchedule } from '@/lib/tournament/schedule';
 import { logEvent } from '@/lib/realtime/event-log';
@@ -58,9 +57,6 @@ export async function POST(
       case 'double_elimination':
         bracket = generateDoubleEliminationBracket(eventId, teamSeeds);
         break;
-      case 'group':
-        bracket = generateGroupPhase(eventId, teamSeeds, event.groupCount || 2);
-        break;
       default:
         return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
     }
@@ -95,7 +91,6 @@ export async function POST(
         bracketPosition: match.bracketPosition,
         nextMatchId: match.nextMatchId,
         loserNextMatchId: match.loserNextMatchId,
-        groupId: match.groupId,
       });
     }
 

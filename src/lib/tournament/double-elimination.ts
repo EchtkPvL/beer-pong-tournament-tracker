@@ -100,7 +100,6 @@ export function generateDoubleEliminationBracket(
         nextMatchId: null,
         loserNextMatchId: null,
         roundId: winnersRoundRefs[r].id,
-        groupId: null,
       });
     }
 
@@ -149,7 +148,6 @@ export function generateDoubleEliminationBracket(
         nextMatchId: null,
         loserNextMatchId: null,
         roundId: losersRoundRefs[lr].id,
-        groupId: null,
       });
     }
 
@@ -203,7 +201,6 @@ export function generateDoubleEliminationBracket(
     nextMatchId: null,
     loserNextMatchId: null,
     roundId: grandFinalsRound.id,
-    groupId: null,
   };
 
   // Reset match
@@ -218,7 +215,6 @@ export function generateDoubleEliminationBracket(
     nextMatchId: null,
     loserNextMatchId: null,
     roundId: resetRound.id,
-    groupId: null,
   };
 
   grandFinalsMatch.nextMatchId = resetMatch.id;

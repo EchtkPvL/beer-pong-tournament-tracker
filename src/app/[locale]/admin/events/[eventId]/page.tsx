@@ -72,9 +72,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
   const [editLocation, setEditLocation] = useState('');
   const [editMode, setEditMode] = useState<string>('single_elimination');
   const [editTableCount, setEditTableCount] = useState(1);
-  const [editGroupCount, setEditGroupCount] = useState<number | null>(null);
-  const [editTeamsAdvance, setEditTeamsAdvance] = useState<number | null>(null);
-  const [editKnockoutMode, setEditKnockoutMode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const teamMap = new Map(teams.map((team) => [team.id, team]));
@@ -102,9 +99,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         setEditLocation(eventData.location ?? '');
         setEditMode(eventData.mode);
         setEditTableCount(eventData.tableCount);
-        setEditGroupCount(eventData.groupCount);
-        setEditTeamsAdvance(eventData.teamsAdvancePerGroup);
-        setEditKnockoutMode(eventData.knockoutMode);
       }
       if (teamsRes.ok) {
         const teamsData: Team[] = await teamsRes.json();
@@ -221,11 +215,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         mode: editMode,
         tableCount: editTableCount,
       };
-      if (editMode === 'group') {
-        payload.groupCount = editGroupCount;
-        payload.teamsAdvancePerGroup = editTeamsAdvance;
-        payload.knockoutMode = editKnockoutMode;
-      }
       const res = await fetch(`/api/events/${eventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -279,8 +268,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         return t('singleElimination');
       case 'double_elimination':
         return t('doubleElimination');
-      case 'group':
-        return t('group');
       default:
         return mode;
     }
@@ -387,24 +374,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     {t('teamCount', { count: teams.length })}
                   </p>
                 </div>
-                {event.mode === 'group' && (
-                  <>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('groupCount')}
-                      </p>
-                      <p className="font-medium">{event.groupCount ?? '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('teamsAdvancePerGroup')}
-                      </p>
-                      <p className="font-medium">
-                        {event.teamsAdvancePerGroup ?? '-'}
-                      </p>
-                    </div>
-                  </>
-                )}
               </div>
 
               <div className="flex flex-wrap gap-3 border-t pt-4">
@@ -681,7 +650,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     <SelectItem value="double_elimination">
                       {t('doubleElimination')}
                     </SelectItem>
-                    <SelectItem value="group">{t('group')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -700,62 +668,6 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   className="w-24"
                 />
               </div>
-
-              {editMode === 'group' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-groups">{t('groupCount')}</Label>
-                    <Input
-                      id="edit-groups"
-                      type="number"
-                      min={2}
-                      max={16}
-                      value={editGroupCount ?? 2}
-                      onChange={(e) =>
-                        setEditGroupCount(parseInt(e.target.value, 10) || 2)
-                      }
-                      className="w-24"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-advance">
-                      {t('teamsAdvancePerGroup')}
-                    </Label>
-                    <Input
-                      id="edit-advance"
-                      type="number"
-                      min={1}
-                      max={8}
-                      value={editTeamsAdvance ?? 2}
-                      onChange={(e) =>
-                        setEditTeamsAdvance(parseInt(e.target.value, 10) || 1)
-                      }
-                      className="w-24"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-knockout">{t('knockoutMode')}</Label>
-                    <Select
-                      value={editKnockoutMode ?? 'single_elimination'}
-                      onValueChange={(v) => setEditKnockoutMode(v)}
-                    >
-                      <SelectTrigger id="edit-knockout">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single_elimination">
-                          {t('singleElimination')}
-                        </SelectItem>
-                        <SelectItem value="double_elimination">
-                          {t('doubleElimination')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
 
               <div className="pt-2">
                 <Button onClick={handleSaveSettings} disabled={saving}>

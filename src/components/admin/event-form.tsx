@@ -14,8 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type EventMode = 'group' | 'single_elimination' | 'double_elimination';
-type KnockoutMode = 'single_elimination' | 'double_elimination';
+type EventMode = 'single_elimination' | 'double_elimination';
 
 export interface EventFormData {
   name: string;
@@ -23,9 +22,6 @@ export interface EventFormData {
   location: string;
   mode: EventMode;
   tableCount: number;
-  groupCount: number | null;
-  teamsAdvancePerGroup: number | null;
-  knockoutMode: KnockoutMode | null;
 }
 
 interface EventFormProps {
@@ -43,9 +39,6 @@ export function EventForm({ initialData, onSubmit }: EventFormProps) {
     location: initialData?.location ?? '',
     mode: initialData?.mode ?? 'single_elimination',
     tableCount: initialData?.tableCount ?? 1,
-    groupCount: initialData?.groupCount ?? 2,
-    teamsAdvancePerGroup: initialData?.teamsAdvancePerGroup ?? 2,
-    knockoutMode: initialData?.knockoutMode ?? 'single_elimination',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -126,7 +119,6 @@ export function EventForm({ initialData, onSubmit }: EventFormProps) {
                 <SelectItem value="double_elimination">
                   {t('doubleElimination')}
                 </SelectItem>
-                <SelectItem value="group">{t('group')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -148,74 +140,6 @@ export function EventForm({ initialData, onSubmit }: EventFormProps) {
               required
             />
           </div>
-
-          {formData.mode === 'group' && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="ef-groupCount">{t('groupCount')}</Label>
-                <Input
-                  id="ef-groupCount"
-                  type="number"
-                  min={2}
-                  max={16}
-                  value={formData.groupCount ?? 2}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      groupCount: parseInt(e.target.value, 10) || 2,
-                    }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ef-teamsAdvancePerGroup">
-                  {t('teamsAdvancePerGroup')}
-                </Label>
-                <Input
-                  id="ef-teamsAdvancePerGroup"
-                  type="number"
-                  min={1}
-                  max={8}
-                  value={formData.teamsAdvancePerGroup ?? 2}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      teamsAdvancePerGroup:
-                        parseInt(e.target.value, 10) || 1,
-                    }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ef-knockoutMode">{t('knockoutMode')}</Label>
-                <Select
-                  value={formData.knockoutMode ?? 'single_elimination'}
-                  onValueChange={(value: KnockoutMode) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      knockoutMode: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger id="ef-knockoutMode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="single_elimination">
-                      {t('singleElimination')}
-                    </SelectItem>
-                    <SelectItem value="double_elimination">
-                      {t('doubleElimination')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={isSubmitting}>

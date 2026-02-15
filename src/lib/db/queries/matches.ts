@@ -20,7 +20,6 @@ type CreateMatchData = {
   bracketPosition?: string | null;
   nextMatchId?: string | null;
   loserNextMatchId?: string | null;
-  groupId?: string | null;
 };
 
 export async function getMatchesByEvent(eventId: number) {

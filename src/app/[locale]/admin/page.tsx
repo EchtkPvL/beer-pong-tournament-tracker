@@ -69,11 +69,9 @@ export default async function AdminDashboardPage() {
                       <td className="py-3 pr-4">{event.date || '-'}</td>
                       <td className="py-3 pr-4">{event.location || '-'}</td>
                       <td className="py-3 pr-4">
-                        {event.mode === 'group'
-                          ? t('group')
-                          : event.mode === 'single_elimination'
-                            ? t('singleElimination')
-                            : t('doubleElimination')}
+                        {event.mode === 'single_elimination'
+                          ? t('singleElimination')
+                          : t('doubleElimination')}
                       </td>
                       <td className="py-3 pr-4">
                         {t('teamCount', { count: event.teamCount })}
