@@ -1,3 +1,6 @@
 {
+  "git": {
+    "deploymentEnabled": false
+  },
   "buildCommand": "npx drizzle-kit push --force && next build"
 }

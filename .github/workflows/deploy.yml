@@ -38,8 +38,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run database migrations
-        run: npx drizzle-kit migrate
+      - name: Sync database schema
+        run: npx drizzle-kit push --force
 
       - name: Build
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
