@@ -16,7 +16,7 @@ function generateSeedOrder(bracketSize: number): number[] {
 
   for (let round = 1; round < rounds; round++) {
     const newSeeds: number[] = [];
-    const sum = Math.pow(2, round) + 1;
+    const sum = Math.pow(2, round + 1) + 1;
     for (const seed of seeds) {
       newSeeds.push(seed);
       newSeeds.push(sum - seed);
