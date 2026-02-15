@@ -79,7 +79,6 @@ npm run dev
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://bptt:bptt@localhost:5432/bptt` |
 | `ADMIN_PASSWORD` | Admin login password | `admin` |
 | `JWT_SECRET` | Secret for JWT signing | `dev-secret-change-in-production` |
-| `NEXT_PUBLIC_VERSION` | Version shown in footer | `dev` |
 | `NEXT_PUBLIC_GITHUB_URL` | GitHub link in footer | - |
 
 ## Deployment (Vercel)
@@ -88,14 +87,10 @@ npm run dev
 
 Vercel's automatic Git deployments are disabled via `vercel.json` (`ignoreCommand: "exit 0"`). All deployments are handled by the GitHub Actions workflow at `.github/workflows/deploy.yml`.
 
-There are two deployment environments:
-
-| Trigger | Environment | Description |
-|---------|-------------|-------------|
-| Push to `main` | **Preview** | Automatic preview deploy on every push. Accessible at a stable preview URL (visible in the Vercel dashboard). |
-| Push a `v*` tag | **Production** | Production deploy. The tag name (e.g. `v1.0.0`) is baked into the build as `NEXT_PUBLIC_VERSION` and shown in the footer. |
-
-The production job also verifies that the tagged commit exists on the `main` branch — tags on feature branches are rejected.
+| Branch | Environment | Description |
+|--------|-------------|-------------|
+| `main` | **Production** | Every push deploys to production. Database schema is pushed automatically. |
+| `dev` | **Preview** | Every push deploys to a preview environment. |
 
 ### Initial setup
 
@@ -106,7 +101,6 @@ The production job also verifies that the tagged commit exists on the `main` bra
    - `ADMIN_PASSWORD` — a strong password
    - `JWT_SECRET` — random 32+ character string
    - `NEXT_PUBLIC_GITHUB_URL` — your repo URL
-   - Do **not** set `NEXT_PUBLIC_VERSION` — it is injected by CI during the production build
 5. Add the required secrets to the GitHub repository (see below)
 
 ### Required GitHub Actions secrets
@@ -119,59 +113,20 @@ Configure these in your GitHub repo under **Settings > Secrets and variables > A
 | `VERCEL_ORG_ID` | Vercel organization/team ID | Run `npx vercel link` locally, then check `.vercel/project.json` |
 | `VERCEL_PROJECT_ID` | Vercel project ID | Same `.vercel/project.json` file after linking |
 
-### Preview deploys
+### Workflow
 
-Every push to `main` automatically creates a preview deployment. The preview URL is stable and can be found in the Vercel dashboard under the project's **Deployments** tab. Use this to verify changes before tagging a production release.
-
-### Deploying to production
-
-```bash
-# Make sure you're on main with the latest changes
-git checkout main
-git pull
-
-# Create and push a version tag
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The workflow will build and deploy automatically. Check progress in the **Actions** tab on GitHub.
-
-### Deploying a hotfix
-
-```bash
-# Fix the issue on main
-git checkout main
-# ... make changes, commit, push ...
-
-# Tag the new commit
-git tag v1.0.1
-git push origin v1.0.1
-```
+1. Develop on the `dev` branch — every push deploys to the preview environment
+2. When ready, merge `dev` into `main` — this deploys to production
 
 ### Rollback
 
-**Option 1** — Tag an older commit and deploy it:
-
-```bash
-git tag v1.0.2 <old-commit-sha>
-git push origin v1.0.2
-```
-
-**Option 2** — Use Vercel's instant rollback via workflow dispatch:
+Use Vercel's instant rollback via workflow dispatch:
 
 ```bash
 gh workflow run deploy.yml
 ```
 
 This runs `vercel rollback`, which instantly reverts to the previous production deployment without rebuilding.
-
-### What does NOT trigger a production deployment
-
-- Pushing commits to `main` (triggers preview only)
-- Pushing commits to any other branch
-- Opening, merging, or closing pull requests
-- Tagging a commit that is not on `main`
 
 ## Project Structure
 

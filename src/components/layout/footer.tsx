@@ -1,14 +1,11 @@
 export function Footer() {
-  const version = process.env.NEXT_PUBLIC_VERSION;
   const commitSha = process.env.NEXT_PUBLIC_COMMIT_SHA;
   const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL;
 
   return (
     <footer className="border-t py-4 text-center text-sm text-muted-foreground">
       <div className="container mx-auto px-4">
-        {version ? (
-          <span>BPTT {version}</span>
-        ) : commitSha ? (
+        {commitSha ? (
           <span>
             BPTT{' '}
             {githubUrl ? (
