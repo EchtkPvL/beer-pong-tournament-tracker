@@ -319,36 +319,54 @@ function BeamerContent({ eventId }: { eventId: string }) {
 
             {allMatchesPlayed ? (
               /* Final Standings */
-              <div>
-                <h2 className="mb-3 text-lg font-semibold text-gray-300">
+              <div className="flex flex-1 flex-col">
+                <h2 className="mb-4 text-center text-lg font-semibold text-gray-300">
                   {tStandings('title')}
                 </h2>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700 text-left text-xs text-gray-400">
-                      <th className="pb-2 pr-2 font-medium">#</th>
-                      <th className="pb-2 pr-2 font-medium">{tStandings('team')}</th>
-                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('played')}</th>
-                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('wins')}</th>
-                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('losses')}</th>
-                      <th className="pb-2 pr-2 text-center font-medium">{tStandings('pointDiff')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {standings.map((s, idx) => (
-                      <tr key={s.teamId} className={`border-b border-gray-800 last:border-0${s.disqualified ? ' opacity-60 line-through' : ''}`}>
-                        <td className="py-1.5 pr-2 text-gray-400">{idx + 1}</td>
-                        <td className="py-1.5 pr-2 truncate max-w-[200px] font-medium">{s.teamName}</td>
-                        <td className="py-1.5 pr-2 text-center">{s.played}</td>
-                        <td className="py-1.5 pr-2 text-center">{s.wins}</td>
-                        <td className="py-1.5 pr-2 text-center">{s.losses}</td>
-                        <td className="py-1.5 pr-2 text-center">
-                          {s.pointDiff > 0 ? `+${s.pointDiff}` : s.pointDiff}
-                        </td>
-                      </tr>
+
+                {/* Top 3 podium */}
+                <div className="space-y-3">
+                  {standings.slice(0, 3).map((s, idx) => {
+                    const place = idx + 1;
+                    const colors = [
+                      'border-yellow-500/70 bg-yellow-500/10 text-yellow-400',
+                      'border-gray-400/70 bg-gray-400/10 text-gray-300',
+                      'border-amber-700/70 bg-amber-700/10 text-amber-600',
+                    ];
+                    const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
+                    return (
+                      <div
+                        key={s.teamId}
+                        className={`flex items-center gap-3 rounded-lg border p-3 ${colors[idx]}${s.disqualified ? ' opacity-60 line-through' : ''}`}
+                      >
+                        <span className="text-2xl">{medals[idx]}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className={`truncate font-bold${place === 1 ? ' text-lg' : ' text-base'}`}>
+                            {s.teamName}
+                          </p>
+                          <p className="text-xs opacity-70">
+                            {s.wins}W &ndash; {s.losses}L
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Remaining teams */}
+                {standings.length > 3 && (
+                  <div className="mt-4 space-y-1 border-t border-gray-800 pt-4">
+                    {standings.slice(3).map((s, idx) => (
+                      <div
+                        key={s.teamId}
+                        className={`flex items-center gap-3 px-3 py-1.5 text-sm text-gray-400${s.disqualified ? ' opacity-60 line-through' : ''}`}
+                      >
+                        <span className="w-6 text-right text-xs">{idx + 4}.</span>
+                        <span className="truncate">{s.teamName}</span>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                )}
               </div>
             ) : (
               <>
