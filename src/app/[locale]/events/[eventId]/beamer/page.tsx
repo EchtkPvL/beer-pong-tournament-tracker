@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { QRCodeSVG } from 'qrcode.react';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
 import { TimerDisplay } from '@/components/timer/timer-display';
 import { BracketView } from '@/components/bracket/bracket-view';
@@ -29,12 +30,20 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [timerExpired, setTimerExpired] = useState(false);
+  const [eventUrl, setEventUrl] = useState('');
   const expiredTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleTimerExpired = useCallback(() => {
     setTimerExpired(true);
     if (expiredTimeoutRef.current) clearTimeout(expiredTimeoutRef.current);
     expiredTimeoutRef.current = setTimeout(() => setTimerExpired(false), 30000);
+  }, []);
+
+  // Derive public event URL from current beamer URL
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.pathname = url.pathname.replace(/\/beamer$/, '');
+    setEventUrl(url.toString());
   }, []);
 
   // Cleanup on unmount
@@ -263,9 +272,20 @@ function BeamerContent({ eventId }: { eventId: string }) {
 
           {/* Right 30%: Timer, current & next matches */}
           <div className="flex w-[30%] flex-col gap-6 overflow-y-auto p-6">
-            {/* Timer */}
-            <div className="flex flex-col items-center gap-2">
+            {/* Timer + QR Code */}
+            <div className="flex items-center justify-center gap-6">
               <TimerDisplay eventId={eventId} large onExpired={handleTimerExpired} />
+              {eventUrl && (
+                <div className="shrink-0 rounded-lg bg-gray-900 p-2">
+                  <QRCodeSVG
+                    value={eventUrl}
+                    size={100}
+                    bgColor="transparent"
+                    fgColor="#f97316"
+                    level="M"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Current Playing Round */}
