@@ -90,7 +90,7 @@ export function TimerControls({ eventId }: TimerControlsProps) {
       <div className="flex flex-wrap gap-2">
         {isStopped && (
           <>
-            <Button onClick={() => sendAction('start')} disabled={loading} size="sm">
+            <Button onClick={() => sendAction('start', { durationSeconds: durationMinutes * 60 })} disabled={loading} size="sm">
               {t('start')}
             </Button>
             <Button
