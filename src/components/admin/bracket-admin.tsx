@@ -80,10 +80,6 @@ export function BracketAdmin({
 
     // Find feeder matches for this match
     const feeders = feederMap.get(matchId) ?? [];
-    // Also check bye feeders (they resolve automatically)
-    const byeFeeders = matches.filter(
-      (m) => m.isBye && m.nextMatchId === matchId
-    );
 
     // Count already-filled slots to determine which feeder this slot maps to
     const match = visibleMatches.find((m) => m.id === matchId);
