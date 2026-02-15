@@ -28,7 +28,7 @@ export function TeamSlot({ team, isBye, isWinner, score, feederLabel }: TeamSlot
       className={cn(
         'flex items-center justify-between gap-2 px-2 py-1 text-sm',
         isWinner && 'font-bold text-primary',
-        !team && !isBye && 'text-muted-foreground italic'
+        !team && 'text-muted-foreground italic'
       )}
     >
       <span className="truncate">{displayName}</span>

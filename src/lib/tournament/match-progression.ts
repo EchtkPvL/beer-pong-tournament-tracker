@@ -64,10 +64,13 @@ async function placeTeamInMatch(matchId: string, teamId: string): Promise<void> 
   // Auto-advance for bye matches: when a team arrives in a bye slot,
   // immediately complete it and advance to the next match
   if (match.isBye) {
+    // Show 1:0 so the bye doesn't look like a 0:0 draw
+    const team1Score = !match.team1Id ? 1 : 0;
+    const team2Score = !match.team1Id ? 0 : 1;
     await db.update(matches).set({
       winnerId: teamId,
-      team1Score: 0,
-      team2Score: 0,
+      team1Score,
+      team2Score,
       status: 'completed',
     }).where(eq(matches.id, matchId));
 
@@ -146,11 +149,13 @@ export async function processByes(eventId: number): Promise<void> {
     const presentTeamId = match.team1Id || match.team2Id;
     if (!presentTeamId) continue;
 
-    // Mark bye match as completed
+    // Mark bye match as completed with 1:0 so it doesn't look like a draw
+    const team1Score = match.team1Id === presentTeamId ? 1 : 0;
+    const team2Score = match.team2Id === presentTeamId ? 1 : 0;
     await db.update(matches).set({
       winnerId: presentTeamId,
-      team1Score: 0,
-      team2Score: 0,
+      team1Score,
+      team2Score,
       status: 'completed',
     }).where(eq(matches.id, match.id));
 
