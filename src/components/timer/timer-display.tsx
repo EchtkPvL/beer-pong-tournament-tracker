@@ -8,13 +8,16 @@ interface TimerDisplayProps {
   eventId: string;
   large?: boolean;
   onExpired?: () => void;
+  refreshKey?: number;
 }
 
-export function TimerDisplay({ eventId, large = false, onExpired }: TimerDisplayProps) {
+export function TimerDisplay({ eventId, large = false, onExpired, refreshKey }: TimerDisplayProps) {
   const [timer, setTimer] = useState<TimerState | null>(null);
   const [displaySeconds, setDisplaySeconds] = useState(0);
+  const [expiredFlash, setExpiredFlash] = useState(false);
   const rafRef = useRef<number | null>(null);
   const prevSecondsRef = useRef<number>(0);
+  const expiredTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchTimer = useCallback(async () => {
     try {
@@ -28,11 +31,19 @@ export function TimerDisplay({ eventId, large = false, onExpired }: TimerDisplay
     }
   }, [eventId]);
 
+  // Regular polling
   useEffect(() => {
     fetchTimer();
     const interval = setInterval(fetchTimer, 5000);
     return () => clearInterval(interval);
   }, [fetchTimer]);
+
+  // Immediate refresh when refreshKey changes (e.g. after admin action)
+  useEffect(() => {
+    if (refreshKey !== undefined && refreshKey > 0) {
+      fetchTimer();
+    }
+  }, [refreshKey, fetchTimer]);
 
   useEffect(() => {
     if (!timer) {
@@ -68,13 +79,36 @@ export function TimerDisplay({ eventId, large = false, onExpired }: TimerDisplay
     }
   }, [timer]);
 
-  // Fire onExpired when timer transitions to 0
+  // Fire onExpired when timer transitions to 0, auto-clear flash after 30s
   useEffect(() => {
     if (displaySeconds === 0 && prevSecondsRef.current > 0 && timer?.status === 'running') {
+      setExpiredFlash(true);
       onExpired?.();
+
+      // Auto-clear flash after 30 seconds
+      if (expiredTimeoutRef.current) clearTimeout(expiredTimeoutRef.current);
+      expiredTimeoutRef.current = setTimeout(() => setExpiredFlash(false), 30000);
     }
     prevSecondsRef.current = displaySeconds;
   }, [displaySeconds, timer?.status, onExpired]);
+
+  // Clear flash when timer is reset/stopped
+  useEffect(() => {
+    if (timer?.status === 'stopped' || timer?.status === 'paused') {
+      setExpiredFlash(false);
+      if (expiredTimeoutRef.current) {
+        clearTimeout(expiredTimeoutRef.current);
+        expiredTimeoutRef.current = null;
+      }
+    }
+  }, [timer?.status]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (expiredTimeoutRef.current) clearTimeout(expiredTimeoutRef.current);
+    };
+  }, []);
 
   const minutes = Math.floor(displaySeconds / 60);
   const seconds = displaySeconds % 60;
@@ -82,9 +116,8 @@ export function TimerDisplay({ eventId, large = false, onExpired }: TimerDisplay
 
   const durationSeconds = timer?.durationSeconds ?? 600;
   const ratio = durationSeconds > 0 ? displaySeconds / durationSeconds : 1;
-  const isExpired = displaySeconds === 0 && timer?.status === 'running';
 
-  const colorClass = isExpired
+  const colorClass = expiredFlash
     ? 'text-red-500 animate-timer-pulse'
     : ratio > 0.5
       ? 'text-green-500'

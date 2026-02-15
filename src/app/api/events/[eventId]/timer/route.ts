@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/session';
 import { timerSchema } from '@/lib/validators';
 import { getTimerByEvent, upsertTimer } from '@/lib/db/queries/timer';
+import { logEvent } from '@/lib/realtime/event-log';
 
 type RouteParams = { params: Promise<{ eventId: string }> };
 
@@ -92,6 +93,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const timer = await upsertTimer(eventId, timerData);
+
+    await logEvent(eventId, 'timer_action', { action });
+
     return NextResponse.json(timer);
   } catch {
     return NextResponse.json(

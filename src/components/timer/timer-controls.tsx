@@ -16,6 +16,7 @@ export function TimerControls({ eventId }: TimerControlsProps) {
   const [durationMinutes, setDurationMinutes] = useState(10);
   const [loading, setLoading] = useState(false);
   const [timerStatus, setTimerStatus] = useState<'stopped' | 'running' | 'paused'>('stopped');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchTimerState = useCallback(async () => {
     try {
@@ -48,6 +49,7 @@ export function TimerControls({ eventId }: TimerControlsProps) {
           body: JSON.stringify({ action, ...extra }),
         });
         await fetchTimerState();
+        setRefreshKey((k) => k + 1);
       } catch {
         // Ignore
       } finally {
@@ -64,7 +66,7 @@ export function TimerControls({ eventId }: TimerControlsProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
-        <TimerDisplay eventId={eventId} />
+        <TimerDisplay eventId={eventId} refreshKey={refreshKey} />
       </div>
 
       {isStopped && (

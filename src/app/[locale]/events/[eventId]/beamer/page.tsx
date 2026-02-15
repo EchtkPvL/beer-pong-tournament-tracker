@@ -29,6 +29,20 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [timerExpired, setTimerExpired] = useState(false);
+  const expiredTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTimerExpired = useCallback(() => {
+    setTimerExpired(true);
+    if (expiredTimeoutRef.current) clearTimeout(expiredTimeoutRef.current);
+    expiredTimeoutRef.current = setTimeout(() => setTimerExpired(false), 30000);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (expiredTimeoutRef.current) clearTimeout(expiredTimeoutRef.current);
+    };
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -57,6 +71,10 @@ function BeamerContent({ eventId }: { eventId: string }) {
   const handleRealtimeEvent = useCallback(() => {
     fetchData();
     setTimerExpired(false);
+    if (expiredTimeoutRef.current) {
+      clearTimeout(expiredTimeoutRef.current);
+      expiredTimeoutRef.current = null;
+    }
   }, [fetchData]);
 
   const isDoubleElim = event?.mode === 'double_elimination';
@@ -247,7 +265,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
           <div className="flex w-[30%] flex-col gap-6 overflow-y-auto p-6">
             {/* Timer */}
             <div className="flex flex-col items-center gap-2">
-              <TimerDisplay eventId={eventId} large onExpired={() => setTimerExpired(true)} />
+              <TimerDisplay eventId={eventId} large onExpired={handleTimerExpired} />
             </div>
 
             {/* Current Playing Round */}
