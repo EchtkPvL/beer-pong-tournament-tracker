@@ -5,9 +5,12 @@ export const events = pgTable('events', {
   name: text('name').notNull().default(''),
   date: text('date'),
   location: text('location'),
-  mode: text('mode', { enum: ['single_elimination', 'double_elimination'] }).notNull(),
+  mode: text('mode', { enum: ['group', 'single_elimination', 'double_elimination'] }).notNull(),
   status: text('status', { enum: ['draft', 'active', 'completed'] }).notNull().default('draft'),
   tableCount: integer('table_count').notNull().default(1),
+  groupCount: integer('group_count'),
+  teamsAdvancePerGroup: integer('teams_advance_per_group'),
+  knockoutMode: text('knockout_mode', { enum: ['single_elimination', 'double_elimination'] }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -19,6 +22,7 @@ export const teams = pgTable('teams', {
   members: json('members').$type<string[]>(),
   seed: integer('seed'),
   status: text('status', { enum: ['active', 'disqualified'] }).notNull().default('active'),
+  groupId: text('group_id'),
 }, (table) => [
   unique('teams_event_name_unique').on(table.eventId, table.name),
 ]);
@@ -27,7 +31,7 @@ export const rounds = pgTable('rounds', {
   id: text('id').primaryKey(),
   eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   roundNumber: integer('round_number').notNull(),
-  phase: text('phase', { enum: ['winners', 'losers', 'finals'] }).notNull(),
+  phase: text('phase', { enum: ['group', 'winners', 'losers', 'finals'] }).notNull(),
   name: text('name').notNull(),
   status: text('status', { enum: ['pending', 'active', 'completed'] }).notNull().default('pending'),
 });
@@ -49,6 +53,7 @@ export const matches = pgTable('matches', {
   bracketPosition: text('bracket_position'),
   nextMatchId: text('next_match_id'),
   loserNextMatchId: text('loser_next_match_id'),
+  groupId: text('group_id'),
 });
 
 export const timerState = pgTable('timer_state', {

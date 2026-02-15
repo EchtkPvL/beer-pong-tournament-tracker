@@ -53,6 +53,10 @@
     "completed": "Abgeschlossen",
     "singleElimination": "K.O.-Runde",
     "doubleElimination": "Doppelte K.O.-Runde",
+    "group": "Gruppenphase",
+    "groupCount": "Anzahl Gruppen",
+    "teamsAdvancePerGroup": "Teams pro Gruppe weiter",
+    "knockoutMode": "K.O.-Format",
     "activate": "Aktivieren",
     "complete": "Abschließen",
     "deleteConfirm": "Turnier wirklich löschen?",
@@ -101,7 +105,11 @@
     "playingRound": "Runde {number}",
     "currentRound": "Aktuelle Runde: {number}",
     "table": "Tisch {number}",
+    "generateKnockout": "K.O.-Runde erstellen",
+    "groupsNotComplete": "Alle Gruppenspiele müssen abgeschlossen sein",
     "noBracket": "Kein Spielplan vorhanden",
+    "noGroups": "Keine Gruppen vorhanden",
+    "group": "Gruppe",
     "team": "Team",
     "matches": "Spiele",
     "winnersBracket": "Gewinner-Bracket",
@@ -117,7 +125,17 @@
     "winnersRound": "Gewinnerrunde {n}",
     "losersRound": "Verliererrunde {n}",
     "grandFinals": "Großes Finale",
-    "resetMatch": "Entscheidungsspiel"
+    "resetMatch": "Entscheidungsspiel",
+    "group": "Gruppe {name}"
+  },
+  "standings": {
+    "title": "Tabelle",
+    "team": "Team",
+    "played": "Sp.",
+    "wins": "S",
+    "losses": "N",
+    "pointDiff": "Diff.",
+    "points": "Pkt."
   },
   "timer": {
     "title": "Timer",

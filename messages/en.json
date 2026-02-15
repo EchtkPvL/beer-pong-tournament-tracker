@@ -53,6 +53,10 @@
     "completed": "Completed",
     "singleElimination": "Single Elimination",
     "doubleElimination": "Double Elimination",
+    "group": "Group Phase",
+    "groupCount": "Number of Groups",
+    "teamsAdvancePerGroup": "Teams Advancing per Group",
+    "knockoutMode": "Knockout Format",
     "activate": "Activate",
     "complete": "Complete",
     "deleteConfirm": "Really delete this tournament?",
@@ -101,7 +105,11 @@
     "playingRound": "Round {number}",
     "currentRound": "Current Round: {number}",
     "table": "Table {number}",
+    "generateKnockout": "Generate Knockout Round",
+    "groupsNotComplete": "All group matches must be completed first",
     "noBracket": "No bracket available",
+    "noGroups": "No groups available",
+    "group": "Group",
     "team": "Team",
     "matches": "Matches",
     "winnersBracket": "Winners Bracket",
@@ -117,7 +125,17 @@
     "winnersRound": "Winners Round {n}",
     "losersRound": "Losers Round {n}",
     "grandFinals": "Grand Finals",
-    "resetMatch": "Reset Match"
+    "resetMatch": "Reset Match",
+    "group": "Group {name}"
+  },
+  "standings": {
+    "title": "Standings",
+    "team": "Team",
+    "played": "P",
+    "wins": "W",
+    "losses": "L",
+    "pointDiff": "Diff.",
+    "points": "Pts."
   },
   "timer": {
     "title": "Timer",

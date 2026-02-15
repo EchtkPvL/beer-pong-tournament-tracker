@@ -8,8 +8,11 @@ export const createEventSchema = z.object({
   name: z.string().max(100).optional(),
   date: z.string().optional(),
   location: z.string().max(200).optional(),
-  mode: z.enum(['single_elimination', 'double_elimination']).default('single_elimination'),
+  mode: z.enum(['group', 'single_elimination', 'double_elimination']).default('single_elimination'),
   tableCount: z.number().int().min(1).max(20).default(1),
+  groupCount: z.number().int().min(2).max(16).nullable().optional(),
+  teamsAdvancePerGroup: z.number().int().min(1).max(8).nullable().optional(),
+  knockoutMode: z.enum(['single_elimination', 'double_elimination']).nullable().optional(),
 });
 
 export const updateEventSchema = createEventSchema.partial().extend({
@@ -24,6 +27,7 @@ export const createTeamSchema = z.object({
 
 export const updateTeamSchema = createTeamSchema.partial().extend({
   status: z.enum(['active', 'disqualified']).optional(),
+  groupId: z.string().nullable().optional(),
 });
 
 export const updateMatchSchema = z.object({

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type EventMode = 'single_elimination' | 'double_elimination';
+type EventMode = 'group' | 'single_elimination' | 'double_elimination';
 
 interface FormData {
   name: string;
@@ -149,6 +149,7 @@ export default function NewEventPage() {
                   <SelectItem value="double_elimination">
                     {t('doubleElimination')}
                   </SelectItem>
+                  <SelectItem value="group">{t('group')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

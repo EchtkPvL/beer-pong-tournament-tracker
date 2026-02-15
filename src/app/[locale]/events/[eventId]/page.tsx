@@ -14,9 +14,11 @@ import type { Event, Team, Match, Round } from '@/lib/db/schema';
 
 function getModeLabel(
   mode: string,
-  labels: { singleElimination: string; doubleElimination: string }
+  labels: { group: string; singleElimination: string; doubleElimination: string }
 ) {
   switch (mode) {
+    case 'group':
+      return labels.group;
     case 'single_elimination':
       return labels.singleElimination;
     case 'double_elimination':
@@ -100,6 +102,7 @@ function EventPageContent({ eventId }: { eventId: string }) {
   }
 
   const modeLabels = {
+    group: t('group'),
     singleElimination: t('singleElimination'),
     doubleElimination: t('doubleElimination'),
   };
@@ -148,7 +151,7 @@ function EventPageContent({ eventId }: { eventId: string }) {
               matches={matches}
               rounds={rounds}
               teams={teams}
-              mode={event.mode as 'single_elimination' | 'double_elimination'}
+              mode={event.mode as 'single_elimination' | 'double_elimination' | 'group'}
               isAdmin={false}
             />
           )}
