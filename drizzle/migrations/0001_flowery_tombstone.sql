@@ -1,11 +1,10 @@
 -- Drop all tables (early development, no production data to preserve)
-DROP TABLE IF EXISTS "event_log" CASCADE;
-DROP TABLE IF EXISTS "timer_state" CASCADE;
-DROP TABLE IF EXISTS "matches" CASCADE;
-DROP TABLE IF EXISTS "rounds" CASCADE;
-DROP TABLE IF EXISTS "teams" CASCADE;
-DROP TABLE IF EXISTS "events" CASCADE;
---> statement-breakpoint
+DROP TABLE IF EXISTS "event_log" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "timer_state" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "matches" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "rounds" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "teams" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "events" CASCADE;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "events" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text DEFAULT '' NOT NULL,
