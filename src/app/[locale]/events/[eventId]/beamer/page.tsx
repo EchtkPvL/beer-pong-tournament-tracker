@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
@@ -55,6 +55,73 @@ function BeamerContent({ eventId }: { eventId: string }) {
     fetchData();
   }, [fetchData]);
 
+  const isDoubleElim = event?.mode === 'double_elimination';
+
+  // Determine which phases exist for double elimination cycling
+  const phases = useMemo(() => {
+    if (!isDoubleElim) return [] as ('winners' | 'losers' | 'finals')[];
+    const phaseSet = new Set<string>();
+    for (const r of rounds) {
+      if (r.phase) phaseSet.add(r.phase);
+    }
+    const order: ('winners' | 'losers' | 'finals')[] = ['winners', 'losers', 'finals'];
+    return order.filter((p) => phaseSet.has(p));
+  }, [isDoubleElim, rounds]);
+
+  const phaseLabels: Record<string, string> = useMemo(() => ({
+    winners: tBracket('winnersBracket'),
+    losers: tBracket('losersBracket'),
+    finals: tBracket('grandFinals'),
+  }), [tBracket]);
+
+  // Auto-cycling state
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // Reset page when phases change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [phases.length]);
+
+  // Auto-advance every 10 seconds for double elimination
+  useEffect(() => {
+    if (phases.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentPage((prev) => (prev + 1) % phases.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [phases.length]);
+
+  const currentPhase = phases.length > 0 ? phases[currentPage % phases.length] : undefined;
+
+  // Scale-to-fit refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = contentRef.current;
+    if (!container || !content) return;
+
+    const measure = () => {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const sw = content.scrollWidth;
+      const sh = content.scrollHeight;
+      if (sw > 0 && sh > 0) {
+        setScale(Math.min(cw / sw, ch / sh, 1));
+      }
+    };
+
+    // Measure after render
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(container);
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [currentPage, matches, rounds]);
+
   const inProgress = matches.filter((m) => m.status === 'in_progress');
   const upcoming = matches
     .filter(
@@ -98,17 +165,56 @@ function BeamerContent({ eventId }: { eventId: string }) {
         {/* Main content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left 70%: Bracket area */}
-          <div className="flex w-[70%] items-center justify-center overflow-auto border-r border-gray-800 p-4">
-            {rounds.length > 0 && matches.length > 0 ? (
-              <BracketView
-                matches={matches}
-                rounds={rounds}
-                teams={teams}
-                mode={(event?.mode as 'single_elimination' | 'double_elimination') ?? 'single_elimination'}
-                isAdmin={false}
-              />
-            ) : (
-              <p className="text-gray-500">{tBracket('noMatches')}</p>
+          <div className="flex w-[70%] flex-col border-r border-gray-800">
+            {/* Phase label */}
+            {isDoubleElim && currentPhase && (
+              <div className="shrink-0 border-b border-gray-800 px-4 py-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                  {phaseLabels[currentPhase]}
+                </h3>
+              </div>
+            )}
+
+            {/* Scaled bracket content */}
+            <div ref={containerRef} className="relative flex-1 overflow-hidden">
+              {rounds.length > 0 && matches.length > 0 ? (
+                <div
+                  ref={contentRef}
+                  className="origin-top-center inline-block p-4"
+                  style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}
+                >
+                  <BracketView
+                    matches={matches}
+                    rounds={rounds}
+                    teams={teams}
+                    mode={(event?.mode as 'single_elimination' | 'double_elimination') ?? 'single_elimination'}
+                    isAdmin={false}
+                    visiblePhase={currentPhase}
+                  />
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-gray-500">{tBracket('noMatches')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Page indicator dots */}
+            {phases.length > 1 && (
+              <div className="flex shrink-0 items-center justify-center gap-2 border-t border-gray-800 py-2">
+                {phases.map((phase, i) => (
+                  <button
+                    key={phase}
+                    onClick={() => setCurrentPage(i)}
+                    className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                      i === currentPage % phases.length
+                        ? 'bg-primary'
+                        : 'bg-gray-600'
+                    }`}
+                    aria-label={phaseLabels[phase]}
+                  />
+                ))}
+              </div>
             )}
           </div>
 

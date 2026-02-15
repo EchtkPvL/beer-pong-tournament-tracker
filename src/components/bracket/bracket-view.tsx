@@ -13,6 +13,7 @@ interface BracketViewProps {
   mode: 'single_elimination' | 'double_elimination';
   onMatchClick?: (match: Match) => void;
   isAdmin: boolean;
+  visiblePhase?: 'winners' | 'losers' | 'finals';
 }
 
 export function BracketView({
@@ -22,6 +23,7 @@ export function BracketView({
   mode,
   onMatchClick,
   isAdmin,
+  visiblePhase,
 }: BracketViewProps) {
   const content = useMemo(() => {
     switch (mode) {
@@ -43,12 +45,13 @@ export function BracketView({
             teams={teams}
             onMatchClick={onMatchClick}
             isAdmin={isAdmin}
+            visiblePhase={visiblePhase}
           />
         );
       default:
         return null;
     }
-  }, [mode, matches, rounds, teams, onMatchClick, isAdmin]);
+  }, [mode, matches, rounds, teams, onMatchClick, isAdmin, visiblePhase]);
 
   return (
     <div className="w-full overflow-x-auto">

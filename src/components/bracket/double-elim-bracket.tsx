@@ -12,6 +12,7 @@ interface DoubleElimBracketProps {
   teams: Team[];
   onMatchClick?: (match: Match) => void;
   isAdmin: boolean;
+  visiblePhase?: 'winners' | 'losers' | 'finals';
 }
 
 export function DoubleElimBracket({
@@ -20,6 +21,7 @@ export function DoubleElimBracket({
   teams,
   onMatchClick,
   isAdmin,
+  visiblePhase,
 }: DoubleElimBracketProps) {
   const t = useTranslations('bracket');
 
@@ -116,14 +118,20 @@ export function DoubleElimBracket({
     );
   }
 
+  const showWinners = winnersTree && (!visiblePhase || visiblePhase === 'winners');
+  const showLosers = losersTree && (!visiblePhase || visiblePhase === 'losers');
+  const showFinals = finalsTree && (!visiblePhase || visiblePhase === 'finals');
+
   return (
     <div className="flex flex-col gap-8">
       {/* Winners Bracket */}
-      {winnersTree && (
+      {showWinners && (
         <div>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t('winnersBracket')}
-          </h3>
+          {!visiblePhase && (
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('winnersBracket')}
+            </h3>
+          )}
           <MatchTreeView
             allMatches={matches}
             root={winnersTree}
@@ -136,16 +144,18 @@ export function DoubleElimBracket({
       )}
 
       {/* Divider */}
-      {winnersTree && losersTree && (
+      {!visiblePhase && winnersTree && losersTree && (
         <div className="border-t-2 border-dashed border-border" />
       )}
 
       {/* Losers Bracket */}
-      {losersTree && (
+      {showLosers && (
         <div>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t('losersBracket')}
-          </h3>
+          {!visiblePhase && (
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('losersBracket')}
+            </h3>
+          )}
           <MatchTreeView
             allMatches={matches}
             root={losersTree}
@@ -158,13 +168,17 @@ export function DoubleElimBracket({
       )}
 
       {/* Grand Finals */}
-      {finalsTree && (
+      {showFinals && (
         <>
-          <div className="border-t-2 border-dashed border-border" />
+          {!visiblePhase && (
+            <div className="border-t-2 border-dashed border-border" />
+          )}
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {t('grandFinals')}
-            </h3>
+            {!visiblePhase && (
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {t('grandFinals')}
+              </h3>
+            )}
             <MatchTreeView
               allMatches={matches}
               root={finalsTree}
