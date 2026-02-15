@@ -90,6 +90,7 @@
     "bye": "Bye",
     "tbd": "TBD",
     "winnerOfMatch": "Winner #{number}",
+    "loserOfMatch": "Loser #{number}",
     "winner": "Winner",
     "loser": "Loser",
     "score": "Score",

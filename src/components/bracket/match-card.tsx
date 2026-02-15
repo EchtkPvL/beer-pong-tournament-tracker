@@ -26,9 +26,18 @@ export function MatchCard({ match, teams, allMatches, onClick, isAdmin }: MatchC
   const team2 = match.team2Id ? teams[match.team2Id] ?? null : null;
 
   // Compute feeder labels for empty team slots
-  const feeders = allMatches
+  // Winner feeders: matches whose winner advances here
+  const winnerFeeders = allMatches
     .filter((m) => !m.isBye && m.nextMatchId === match.id)
     .sort((a, b) => a.matchNumber - b.matchNumber);
+  // Loser feeders: matches whose loser drops here (double elimination)
+  const loserFeeders = allMatches
+    .filter((m) => !m.isBye && m.loserNextMatchId === match.id)
+    .sort((a, b) => a.matchNumber - b.matchNumber);
+  const allFeeders = [
+    ...winnerFeeders.map((m) => ({ match: m, type: 'winner' as const })),
+    ...loserFeeders.map((m) => ({ match: m, type: 'loser' as const })),
+  ];
   const filledSlots = (match.team1Id ? 1 : 0) + (match.team2Id ? 1 : 0);
 
   const getFeederLabel = (slot: 0 | 1): string | undefined => {
@@ -40,9 +49,11 @@ export function MatchCard({ match, teams, allMatches, onClick, isAdmin }: MatchC
     } else {
       return undefined;
     }
-    const feeder = feeders[feederIdx];
-    if (feeder && feeder.matchNumber > 0) {
-      return t('winnerOfMatch', { number: feeder.matchNumber });
+    const feeder = allFeeders[feederIdx];
+    if (feeder && feeder.match.matchNumber > 0) {
+      return feeder.type === 'loser'
+        ? t('loserOfMatch', { number: feeder.match.matchNumber })
+        : t('winnerOfMatch', { number: feeder.match.matchNumber });
     }
     return undefined;
   };
