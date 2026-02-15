@@ -134,14 +134,30 @@ function BeamerContent({ eventId }: { eventId: string }) {
     return () => ro.disconnect();
   }, [currentPage, matches, rounds]);
 
-  const inProgress = matches.filter((m) => m.status === 'in_progress');
-  const upcoming = matches
+  // Playable matches: non-bye, both teams assigned, with a scheduled round
+  const playable = matches.filter(
+    (m) => !m.isBye && m.team1Id && m.team2Id && m.scheduledRound != null && m.scheduledRound > 0
+  );
+
+  // Current round = lowest scheduledRound with at least one non-completed match
+  const incompleteRounds = playable
+    .filter((m) => m.status !== 'completed')
+    .map((m) => m.scheduledRound!);
+  const currentPlayingRound = incompleteRounds.length > 0 ? Math.min(...incompleteRounds) : null;
+
+  // Current matches: all non-completed matches from the current round
+  const inProgress = currentPlayingRound != null
+    ? playable
+        .filter((m) => m.scheduledRound === currentPlayingRound && m.status !== 'completed')
+        .sort((a, b) => a.matchNumber - b.matchNumber)
+    : [];
+
+  // Upcoming: non-completed matches from rounds after current
+  const upcoming = playable
     .filter(
       (m) =>
-        (m.status === 'pending' || m.status === 'scheduled') &&
-        m.team1Id !== null &&
-        m.team2Id !== null &&
-        !m.isBye
+        m.status !== 'completed' &&
+        (currentPlayingRound == null || m.scheduledRound! > currentPlayingRound)
     )
     .sort((a, b) => (a.scheduledRound ?? 0) - (b.scheduledRound ?? 0) || a.matchNumber - b.matchNumber);
 
@@ -156,12 +172,6 @@ function BeamerContent({ eventId }: { eventId: string }) {
       upcomingByRound.push([round, [m]]);
     }
   }
-
-  const currentPlayingRound = inProgress.length > 0
-    ? inProgress[0].scheduledRound
-    : upcoming.length > 0
-      ? upcoming[0].scheduledRound
-      : null;
 
   if (loading) {
     return (

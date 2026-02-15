@@ -23,15 +23,31 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
   const tBracket = useTranslations('bracket');
   const tBeamer = useTranslations('beamer');
 
-  const { inProgress, upcomingByRound, completedByRound } = useMemo(() => {
-    const ip = matches.filter((m) => m.status === 'in_progress' && !m.isBye);
-    const upcoming = matches
+  const { currentRound, currentMatches, upcomingByRound, completedByRound } = useMemo(() => {
+    // Playable matches: non-bye, with both teams, with a scheduled round
+    const playable = matches.filter(
+      (m) => !m.isBye && m.team1Id && m.team2Id && m.scheduledRound != null && m.scheduledRound > 0
+    );
+
+    // Current round = lowest scheduledRound with at least one non-completed match
+    const incompleteRounds = playable
+      .filter((m) => m.status !== 'completed')
+      .map((m) => m.scheduledRound!);
+    const cr = incompleteRounds.length > 0 ? Math.min(...incompleteRounds) : null;
+
+    // Current matches: all non-completed matches from the current round
+    const current = cr != null
+      ? playable.filter(
+          (m) => m.scheduledRound === cr && m.status !== 'completed'
+        ).sort((a, b) => a.matchNumber - b.matchNumber)
+      : [];
+
+    // Upcoming: non-completed matches from rounds after current
+    const upcoming = playable
       .filter(
         (m) =>
-          (m.status === 'pending' || m.status === 'scheduled') &&
-          m.team1Id !== null &&
-          m.team2Id !== null &&
-          !m.isBye
+          m.status !== 'completed' &&
+          (cr == null || m.scheduledRound! > cr)
       )
       .sort(
         (a, b) =>
@@ -64,19 +80,12 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
     }
 
     return {
-      inProgress: ip,
+      currentRound: cr,
+      currentMatches: current,
       upcomingByRound: ubr,
       completedByRound: cbr,
     };
   }, [matches]);
-
-  // Determine the current playing round
-  const currentRound =
-    inProgress.length > 0
-      ? inProgress[0].scheduledRound
-      : upcomingByRound.size > 0
-        ? [...upcomingByRound.keys()][0]
-        : null;
 
   return (
     <div className="space-y-6">
@@ -88,18 +97,18 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
         </div>
       )}
 
-      {/* In Progress */}
+      {/* Current Matches */}
       <section>
         <h3 className="mb-3 text-lg font-semibold">
           {tBeamer('currentMatches')}
         </h3>
-        {inProgress.length === 0 ? (
+        {currentMatches.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {tBeamer('noCurrentMatches')}
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {inProgress.map((match) => (
+            {currentMatches.map((match) => (
               <Card key={match.id} className="border-primary/30">
                 <CardContent className="flex items-center justify-between p-3">
                   <div className="flex items-center gap-2">
@@ -125,7 +134,9 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                         {tBracket('table', { number: match.tableNumber })}
                       </Badge>
                     )}
-                    <Badge>{t('inProgress')}</Badge>
+                    <Badge>
+                      {match.status === 'in_progress' ? t('inProgress') : t('pending')}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
