@@ -39,29 +39,17 @@ export function SingleElimBracket({
     [rounds]
   );
 
-  // Filter out bye matches for display
-  const visibleMatches = useMemo(
-    () => matches.filter((m) => !m.isBye),
-    [matches]
-  );
-
-  // Group visible matches by round
+  // Group matches by round
   const matchesByRound = useMemo(() => {
     const map: Record<string, Match[]> = {};
-    for (const match of visibleMatches) {
+    for (const match of matches) {
       if (!map[match.roundId]) {
         map[match.roundId] = [];
       }
       map[match.roundId].push(match);
     }
     return map;
-  }, [visibleMatches]);
-
-  // Filter out rounds with no visible matches (only byes)
-  const visibleRounds = useMemo(
-    () => sortedRounds.filter((r) => (matchesByRound[r.id] ?? []).length > 0),
-    [sortedRounds, matchesByRound]
-  );
+  }, [matches]);
 
   if (sortedRounds.length === 0) {
     return (
@@ -73,7 +61,7 @@ export function SingleElimBracket({
 
   return (
     <div className="flex items-stretch gap-0">
-      {visibleRounds.map((round, index) => {
+      {sortedRounds.map((round, index) => {
         const roundMatches = matchesByRound[round.id] ?? [];
         return (
           <div key={round.id} className="flex items-stretch">
@@ -86,7 +74,7 @@ export function SingleElimBracket({
               isAdmin={isAdmin}
             />
             {/* Connector lines between rounds */}
-            {index < visibleRounds.length - 1 && (
+            {index < sortedRounds.length - 1 && (
               <BracketConnector matchCount={roundMatches.length} />
             )}
           </div>

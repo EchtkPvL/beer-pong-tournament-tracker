@@ -56,23 +56,17 @@ export function DoubleElimBracket({
     return { winnersRounds: winners, losersRounds: losers, finalsRounds: finals };
   }, [rounds]);
 
-  // Filter out bye matches for display
-  const visibleMatches = useMemo(
-    () => matches.filter((m) => !m.isBye),
-    [matches]
-  );
-
-  // Group visible matches by round
+  // Group matches by round
   const matchesByRound = useMemo(() => {
     const map: Record<string, Match[]> = {};
-    for (const match of visibleMatches) {
+    for (const match of matches) {
       if (!map[match.roundId]) {
         map[match.roundId] = [];
       }
       map[match.roundId].push(match);
     }
     return map;
-  }, [visibleMatches]);
+  }, [matches]);
 
   if (rounds.length === 0) {
     return (

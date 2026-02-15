@@ -56,12 +56,9 @@ export function BracketAdmin({
 
   const teamMap = new Map(teams.map((team) => [team.id, team]));
 
-  // Only show real (non-bye) matches in the bracket display
-  const visibleMatches = matches.filter((m) => !m.isBye);
-
   // Build feeder map: matchId → non-bye feeder matches sorted by match number
   const feederMap = new Map<string, Match[]>();
-  for (const match of visibleMatches) {
+  for (const match of matches.filter((m) => !m.isBye)) {
     if (match.nextMatchId) {
       const feeders = feederMap.get(match.nextMatchId) ?? [];
       feeders.push(match);
@@ -82,7 +79,7 @@ export function BracketAdmin({
     const feeders = feederMap.get(matchId) ?? [];
 
     // Count already-filled slots to determine which feeder this slot maps to
-    const match = visibleMatches.find((m) => m.id === matchId);
+    const match = matches.find((m) => m.id === matchId);
     const filledSlots = (match?.team1Id ? 1 : 0) + (match?.team2Id ? 1 : 0);
 
     // If one slot is filled (e.g. by bye), the null slot is the remaining feeder
@@ -187,18 +184,13 @@ export function BracketAdmin({
   );
 
   const matchesByRound = new Map<string, Match[]>();
-  for (const match of visibleMatches) {
+  for (const match of matches) {
     const existing = matchesByRound.get(match.roundId) ?? [];
     existing.push(match);
     matchesByRound.set(match.roundId, existing);
   }
 
-  // Filter out rounds that have no visible matches (rounds with only byes)
-  const visibleRounds = sortedRounds.filter(
-    (r) => (matchesByRound.get(r.id) ?? []).length > 0
-  );
-
-  if (visibleMatches.length === 0) {
+  if (matches.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -250,7 +242,7 @@ export function BracketAdmin({
       </div>
 
       {/* Rounds overview */}
-      {visibleRounds.map((round) => {
+      {sortedRounds.map((round) => {
         const roundMatches = matchesByRound.get(round.id) ?? [];
         const completedCount = roundMatches.filter(
           (m) => m.status === 'completed'
