@@ -276,7 +276,7 @@ function BeamerContent({ eventId }: { eventId: string }) {
             <div className="flex items-center justify-center gap-6">
               <TimerDisplay eventId={eventId} large onExpired={handleTimerExpired} />
               {eventUrl && (
-                <div className="shrink-0 rounded-lg bg-gray-900 p-2">
+                <div className="shrink-0">
                   <QRCodeSVG
                     value={eventUrl}
                     size={100}
