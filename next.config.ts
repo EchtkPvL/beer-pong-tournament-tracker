@@ -12,9 +12,7 @@ const commitSha = (() => {
   }
 })();
 
-const version = (() => {
-  // Fetch tags first — Vercel uses shallow clones that lack them
-  try { execSync('git fetch --tags --quiet', { stdio: 'ignore' }); } catch {}
+const version = process.env.NEXT_PUBLIC_VERSION || (() => {
   try {
     const tag = execSync('git tag --points-at HEAD').toString().trim();
     return tag.split('\n')[0] || '';
