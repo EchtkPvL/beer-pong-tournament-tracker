@@ -66,6 +66,18 @@ function BeamerContent({ eventId }: { eventId: string }) {
     )
     .sort((a, b) => (a.scheduledRound ?? 0) - (b.scheduledRound ?? 0) || a.matchNumber - b.matchNumber);
 
+  // Group upcoming matches by scheduledRound
+  const upcomingByRound: [number, Match[]][] = [];
+  for (const m of upcoming) {
+    const round = m.scheduledRound ?? 0;
+    const last = upcomingByRound[upcomingByRound.length - 1];
+    if (last && last[0] === round) {
+      last[1].push(m);
+    } else {
+      upcomingByRound.push([round, [m]]);
+    }
+  }
+
   const currentPlayingRound = inProgress.length > 0
     ? inProgress[0].scheduledRound
     : upcoming.length > 0
@@ -170,41 +182,50 @@ function BeamerContent({ eventId }: { eventId: string }) {
               )}
             </div>
 
-            {/* Next Matches */}
+            {/* Next Matches (grouped by round) */}
             <div>
               <h2 className="mb-3 text-lg font-semibold text-gray-300">
                 {t('nextMatches')}
               </h2>
-              {upcoming.length === 0 ? (
+              {upcomingByRound.length === 0 ? (
                 <p className="text-sm text-gray-500">{tMatches('noMatches')}</p>
               ) : (
-                <ul className="space-y-2">
-                  {upcoming.slice(0, 6).map((match) => (
-                    <li
-                      key={match.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
-                    >
-                      <div className="flex items-center gap-2 text-sm">
-                        {match.scheduledRound != null && match.scheduledRound > 0 && (
-                          <span className="text-xs font-medium text-primary">
-                            R{match.scheduledRound}
+                <div className="space-y-4">
+                  {upcomingByRound.slice(0, 3).map(([round, roundMatches]) => (
+                    <div key={round}>
+                      {round > 0 && (
+                        <h3 className="mb-2 text-sm font-medium text-primary">
+                          {tBracket('playingRound', { number: round })}
+                          <span className="ml-2 text-xs text-gray-500">
+                            {tMatches('concurrent', { count: roundMatches.length })}
                           </span>
-                        )}
-                        <span>{getTeamName(teams, match.team1Id)}</span>
-                        <span className="text-gray-500">{tMatches('vs')}</span>
-                        <span>{getTeamName(teams, match.team2Id)}</span>
-                      </div>
-                      {match.tableNumber !== null && (
-                        <Badge
-                          variant="outline"
-                          className="border-gray-700 text-gray-400"
-                        >
-                          {tBracket('table', { number: match.tableNumber })}
-                        </Badge>
+                        </h3>
                       )}
-                    </li>
+                      <ul className="space-y-2">
+                        {roundMatches.map((match) => (
+                          <li
+                            key={match.id}
+                            className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
+                          >
+                            <div className="flex items-center gap-2 text-sm">
+                              <span>{getTeamName(teams, match.team1Id)}</span>
+                              <span className="text-gray-500">{tMatches('vs')}</span>
+                              <span>{getTeamName(teams, match.team2Id)}</span>
+                            </div>
+                            {match.tableNumber !== null && (
+                              <Badge
+                                variant="outline"
+                                className="border-gray-700 text-gray-400"
+                              >
+                                {tBracket('table', { number: match.tableNumber })}
+                              </Badge>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>
