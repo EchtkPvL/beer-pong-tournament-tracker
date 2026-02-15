@@ -1,11 +1,32 @@
 export function Footer() {
-  const version = process.env.NEXT_PUBLIC_VERSION || 'dev';
+  const version = process.env.NEXT_PUBLIC_VERSION;
+  const commitSha = process.env.NEXT_PUBLIC_COMMIT_SHA;
   const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL;
 
   return (
     <footer className="border-t py-4 text-center text-sm text-muted-foreground">
       <div className="container mx-auto px-4">
-        <span>BPTT {version}</span>
+        {version ? (
+          <span>BPTT {version}</span>
+        ) : commitSha ? (
+          <span>
+            BPTT{' '}
+            {githubUrl ? (
+              <a
+                href={`${githubUrl}/commit/${commitSha}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-4 hover:underline"
+              >
+                {commitSha}
+              </a>
+            ) : (
+              commitSha
+            )}
+          </span>
+        ) : (
+          <span>BPTT dev</span>
+        )}
         {githubUrl && (
           <>
             <span className="mx-1">&middot;</span>
