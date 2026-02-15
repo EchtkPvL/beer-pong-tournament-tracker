@@ -224,18 +224,21 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify
             <DialogHeader>
               <DialogTitle>{t('add')}</DialogTitle>
             </DialogHeader>
-            {teamFormFields}
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setAddOpen(false)}
-              >
-                {tCommon('cancel')}
-              </Button>
-              <Button onClick={handleAdd} disabled={isSubmitting || !formData.name}>
-                {isSubmitting ? tCommon('loading') : tCommon('create')}
-              </Button>
-            </DialogFooter>
+            <form onSubmit={(e) => { e.preventDefault(); handleAdd(); }}>
+              {teamFormFields}
+              <DialogFooter className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAddOpen(false)}
+                >
+                  {tCommon('cancel')}
+                </Button>
+                <Button type="submit" disabled={isSubmitting || !formData.name}>
+                  {isSubmitting ? tCommon('loading') : tCommon('create')}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -371,24 +374,27 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify
           <DialogHeader>
             <DialogTitle>{tCommon('edit')}</DialogTitle>
           </DialogHeader>
-          {teamFormFields}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditOpen(false);
-                setEditingTeam(null);
-              }}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              onClick={handleEdit}
-              disabled={isSubmitting || !formData.name}
-            >
-              {isSubmitting ? tCommon('loading') : tCommon('save')}
-            </Button>
-          </DialogFooter>
+          <form onSubmit={(e) => { e.preventDefault(); handleEdit(); }}>
+            {teamFormFields}
+            <DialogFooter className="mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEditOpen(false);
+                  setEditingTeam(null);
+                }}
+              >
+                {tCommon('cancel')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formData.name}
+              >
+                {isSubmitting ? tCommon('loading') : tCommon('save')}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

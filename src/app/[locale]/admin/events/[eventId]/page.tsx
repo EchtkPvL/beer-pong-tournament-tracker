@@ -383,7 +383,8 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
+                <form onSubmit={(e) => { e.preventDefault(); handleSaveSettings(); }} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="edit-name">{t('name')}</Label>
@@ -513,6 +514,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                       {allGroupsDone ? tBracket('generateKnockout') : tBracket('groupsNotComplete')}
                     </p>
                     <Button
+                      type="button"
                       onClick={handleGenerateKnockout}
                       disabled={!allGroupsDone || isGeneratingKnockout}
                       size="sm"
@@ -524,7 +526,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-3 border-t pt-4">
-                  <Button onClick={handleSaveSettings} disabled={saving}>
+                  <Button type="submit" disabled={saving}>
                     {saving ? tCommon('loading') : tCommon('save')}
                   </Button>
 
@@ -535,20 +537,20 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   </Button>
 
                   {event.status === 'draft' && (
-                    <Button onClick={handleActivate} variant="secondary">
+                    <Button type="button" onClick={handleActivate} variant="secondary">
                       {t('activate')}
                     </Button>
                   )}
 
                   {event.status === 'active' && (
                     allMatchesPlayed ? (
-                      <Button onClick={handleComplete} variant="secondary">
+                      <Button type="button" onClick={handleComplete} variant="secondary">
                         {t('complete')}
                       </Button>
                     ) : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="secondary">
+                          <Button type="button" variant="secondary">
                             {t('complete')}
                           </Button>
                         </AlertDialogTrigger>
@@ -572,7 +574,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive">{tCommon('delete')}</Button>
+                      <Button type="button" variant="destructive">{tCommon('delete')}</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -595,7 +597,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   {matches.length > 0 && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button type="button" variant="outline" size="sm">
                           {tBracket('regenerate')}
                         </Button>
                       </AlertDialogTrigger>
@@ -616,6 +618,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     </AlertDialog>
                   )}
                 </div>
+                </form>
               </CardContent>
             </Card>
 
