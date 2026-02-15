@@ -464,6 +464,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         <TabsContent value="bracket">
           <BracketAdmin
             eventId={eventId}
+            event={event}
             matches={matches}
             rounds={rounds}
             teams={teams}

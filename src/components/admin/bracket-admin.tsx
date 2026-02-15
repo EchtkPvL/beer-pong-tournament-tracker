@@ -18,10 +18,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { MatchResultForm } from '@/components/admin/match-result-form';
 import { cn } from '@/lib/utils';
-import type { Match, Round, Team } from '@/lib/db/schema';
+import type { Event, Match, Round, Team } from '@/lib/db/schema';
 
 interface BracketAdminProps {
   eventId: string;
+  event: Event | null;
   matches: Match[];
   rounds: Round[];
   teams: Team[];
@@ -39,6 +40,7 @@ interface MatchWithTeamNames {
 
 export function BracketAdmin({
   eventId,
+  event,
   matches,
   rounds,
   teams,
@@ -49,6 +51,7 @@ export function BracketAdmin({
   const tMatches = useTranslations('matches');
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<MatchWithTeamNames | null>(
     null
   );
@@ -115,6 +118,26 @@ export function BracketAdmin({
       setIsGenerating(false);
     }
   };
+
+  const handleGenerateKnockout = async () => {
+    setIsGeneratingKnockout(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/generate-knockout`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        onRefresh();
+      }
+    } finally {
+      setIsGeneratingKnockout(false);
+    }
+  };
+
+  // Group mode: check if knockout can be generated
+  const isGroupMode = event?.mode === 'group';
+  const groupMatches = isGroupMode ? matches.filter(m => m.groupId && !m.isBye) : [];
+  const allGroupsDone = isGroupMode && groupMatches.length > 0 && groupMatches.every(m => m.status === 'completed');
+  const hasKnockoutRounds = isGroupMode && rounds.some(r => r.phase !== 'group');
 
   const handleMatchClick = (match: Match) => {
     if (!match.team1Id || !match.team2Id) return;
@@ -240,6 +263,23 @@ export function BracketAdmin({
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {/* Generate Knockout button for group mode */}
+      {isGroupMode && !hasKnockoutRounds && (
+        <Card>
+          <CardContent className="flex items-center justify-between py-4">
+            <p className="text-sm text-muted-foreground">
+              {allGroupsDone ? t('generateKnockout') : t('groupsNotComplete')}
+            </p>
+            <Button
+              onClick={handleGenerateKnockout}
+              disabled={!allGroupsDone || isGeneratingKnockout}
+            >
+              {isGeneratingKnockout ? tCommon('loading') : t('generateKnockout')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Rounds overview */}
       {sortedRounds.map((round) => {

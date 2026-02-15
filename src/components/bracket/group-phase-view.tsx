@@ -3,12 +3,15 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import type { Match, Team } from '@/lib/db/schema';
+import type { Match, Round, Team } from '@/lib/db/schema';
 import type { GroupStanding } from '@/lib/tournament/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SingleElimBracket } from './single-elim-bracket';
+import { DoubleElimBracket } from './double-elim-bracket';
 
 interface GroupPhaseViewProps {
   matches: Match[];
+  rounds: Round[];
   teams: Team[];
   onMatchClick?: (match: Match) => void;
   isAdmin: boolean;
@@ -23,6 +26,7 @@ const statusColors: Record<string, string> = {
 
 export function GroupPhaseView({
   matches,
+  rounds,
   teams,
   onMatchClick,
   isAdmin,
@@ -148,6 +152,11 @@ export function GroupPhaseView({
     }
     return map;
   }, [allGroupMatches]);
+
+  // Knockout phase data
+  const knockoutRounds = useMemo(() => rounds.filter(r => r.phase !== 'group'), [rounds]);
+  const knockoutMatches = useMemo(() => matches.filter(m => !m.groupId), [matches]);
+  const hasLosersPhase = useMemo(() => knockoutRounds.some(r => r.phase === 'losers'), [knockoutRounds]);
 
   const groupIds = Array.from(groups.keys()).sort();
   const teamsMap = useMemo(() => {
@@ -298,6 +307,31 @@ export function GroupPhaseView({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Knockout bracket */}
+      {knockoutRounds.length > 0 && knockoutMatches.length > 0 && (
+        <div className="overflow-x-auto">
+          <div className="min-w-max p-4">
+            {hasLosersPhase ? (
+              <DoubleElimBracket
+                matches={knockoutMatches}
+                rounds={knockoutRounds}
+                teams={teams}
+                onMatchClick={onMatchClick}
+                isAdmin={isAdmin}
+              />
+            ) : (
+              <SingleElimBracket
+                matches={knockoutMatches}
+                rounds={knockoutRounds}
+                teams={teams}
+                onMatchClick={onMatchClick}
+                isAdmin={isAdmin}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

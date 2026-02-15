@@ -54,6 +54,7 @@ export function BracketView({
         return (
           <GroupPhaseView
             matches={matches}
+            rounds={rounds}
             teams={teams}
             onMatchClick={onMatchClick}
             isAdmin={isAdmin}
