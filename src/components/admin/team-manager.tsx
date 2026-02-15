@@ -30,6 +30,7 @@ import type { Team } from '@/lib/db/schema';
 interface TeamManagerProps {
   eventId: string;
   initialTeams: Team[];
+  onTeamsChange?: () => void;
 }
 
 interface TeamFormData {
@@ -40,7 +41,7 @@ interface TeamFormData {
 
 const emptyForm: TeamFormData = { name: '', members: '', seed: '' };
 
-export function TeamManager({ eventId, initialTeams }: TeamManagerProps) {
+export function TeamManager({ eventId, initialTeams, onTeamsChange }: TeamManagerProps) {
   const t = useTranslations('teams');
   const tCommon = useTranslations('common');
 
@@ -86,6 +87,7 @@ export function TeamManager({ eventId, initialTeams }: TeamManagerProps) {
         setFormData(emptyForm);
         setAddOpen(false);
         await refreshTeams();
+        onTeamsChange?.();
       }
     } finally {
       setIsSubmitting(false);
@@ -120,6 +122,7 @@ export function TeamManager({ eventId, initialTeams }: TeamManagerProps) {
         setEditOpen(false);
         setEditingTeam(null);
         await refreshTeams();
+        onTeamsChange?.();
       }
     } finally {
       setIsSubmitting(false);
@@ -132,6 +135,7 @@ export function TeamManager({ eventId, initialTeams }: TeamManagerProps) {
     });
     if (res.ok) {
       await refreshTeams();
+      onTeamsChange?.();
     }
   };
 
@@ -143,6 +147,7 @@ export function TeamManager({ eventId, initialTeams }: TeamManagerProps) {
     });
     if (res.ok) {
       await refreshTeams();
+      onTeamsChange?.();
     }
   };
 

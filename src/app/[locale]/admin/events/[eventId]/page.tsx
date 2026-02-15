@@ -129,6 +129,35 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     fetchData();
   }, [fetchData]);
 
+  const generateBracket = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/generate-bracket`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        await fetchData();
+      }
+    } catch {
+      // silently fail
+    }
+  }, [eventId, fetchData]);
+
+  const handleTeamsChange = useCallback(async () => {
+    try {
+      const teamsRes = await fetch(`/api/events/${eventId}/teams`);
+      if (!teamsRes.ok) return;
+      const freshTeams: Team[] = await teamsRes.json();
+      const activeCount = freshTeams.filter((t) => t.status === 'active').length;
+      if (activeCount >= 2) {
+        await generateBracket();
+      } else {
+        await fetchData();
+      }
+    } catch {
+      // silently fail
+    }
+  }, [eventId, generateBracket, fetchData]);
+
   const handleActivate = async () => {
     const res = await fetch(`/api/events/${eventId}`, {
       method: 'PUT',
@@ -204,6 +233,10 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
       });
       if (res.ok) {
         await fetchData();
+        const activeCount = teams.filter((t) => t.status === 'active').length;
+        if (activeCount >= 2) {
+          await generateBracket();
+        }
       }
     } catch {
       // ignore
@@ -424,7 +457,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
         {/* Teams Tab */}
         <TabsContent value="teams">
-          <TeamManager eventId={eventId} initialTeams={teams} />
+          <TeamManager eventId={eventId} initialTeams={teams} onTeamsChange={handleTeamsChange} />
         </TabsContent>
 
         {/* Bracket Tab */}
