@@ -56,9 +56,57 @@ export function BracketAdmin({
 
   const teamMap = new Map(teams.map((team) => [team.id, team]));
 
-  const getTeamName = (teamId: string | null): string => {
-    if (!teamId) return t('tbd');
-    return teamMap.get(teamId)?.name ?? t('tbd');
+  // Only show real (non-bye) matches in the bracket display
+  const visibleMatches = matches.filter((m) => !m.isBye);
+
+  // Build feeder map: matchId → non-bye feeder matches sorted by match number
+  const feederMap = new Map<string, Match[]>();
+  for (const match of visibleMatches) {
+    if (match.nextMatchId) {
+      const feeders = feederMap.get(match.nextMatchId) ?? [];
+      feeders.push(match);
+      feederMap.set(match.nextMatchId, feeders);
+    }
+  }
+  // Sort feeders by match number
+  for (const [key, feeders] of feederMap) {
+    feederMap.set(key, feeders.sort((a, b) => a.matchNumber - b.matchNumber));
+  }
+
+  const getTeamLabel = (teamId: string | null, matchId: string, slot: 0 | 1): string => {
+    if (teamId) {
+      return teamMap.get(teamId)?.name ?? t('tbd');
+    }
+
+    // Find feeder matches for this match
+    const feeders = feederMap.get(matchId) ?? [];
+    // Also check bye feeders (they resolve automatically)
+    const byeFeeders = matches.filter(
+      (m) => m.isBye && m.nextMatchId === matchId
+    );
+
+    // Count already-filled slots to determine which feeder this slot maps to
+    const match = visibleMatches.find((m) => m.id === matchId);
+    const filledSlots = (match?.team1Id ? 1 : 0) + (match?.team2Id ? 1 : 0);
+
+    // If one slot is filled (e.g. by bye), the null slot is the remaining feeder
+    let feederIdx: number;
+    if (filledSlots === 1 && slot === 1) {
+      // team1 is filled, team2 is the remaining feeder
+      // Use the feeder that hasn't been resolved yet (non-bye feeders)
+      feederIdx = 0;
+    } else if (filledSlots === 0) {
+      feederIdx = slot;
+    } else {
+      feederIdx = 0;
+    }
+
+    const feeder = feeders[feederIdx];
+    if (feeder && feeder.matchNumber > 0) {
+      return t('winnerOfMatch', { number: feeder.matchNumber });
+    }
+
+    return t('tbd');
   };
 
   const handleGenerateBracket = async () => {
@@ -82,8 +130,8 @@ export function BracketAdmin({
     setSelectedMatch({
       id: match.id,
       matchNumber: match.matchNumber,
-      team1Name: getTeamName(match.team1Id),
-      team2Name: getTeamName(match.team2Id),
+      team1Name: teamMap.get(match.team1Id)?.name ?? t('tbd'),
+      team2Name: teamMap.get(match.team2Id)?.name ?? t('tbd'),
       team1Score: match.team1Score,
       team2Score: match.team2Score,
     });
@@ -143,13 +191,18 @@ export function BracketAdmin({
   );
 
   const matchesByRound = new Map<string, Match[]>();
-  for (const match of matches) {
+  for (const match of visibleMatches) {
     const existing = matchesByRound.get(match.roundId) ?? [];
     existing.push(match);
     matchesByRound.set(match.roundId, existing);
   }
 
-  if (matches.length === 0) {
+  // Filter out rounds that have no visible matches (rounds with only byes)
+  const visibleRounds = sortedRounds.filter(
+    (r) => (matchesByRound.get(r.id) ?? []).length > 0
+  );
+
+  if (visibleMatches.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -201,7 +254,7 @@ export function BracketAdmin({
       </div>
 
       {/* Rounds overview */}
-      {sortedRounds.map((round) => {
+      {visibleRounds.map((round) => {
         const roundMatches = matchesByRound.get(round.id) ?? [];
         const completedCount = roundMatches.filter(
           (m) => m.status === 'completed'
@@ -247,9 +300,7 @@ export function BracketAdmin({
                           {t('matchNumber', { number: match.matchNumber })}
                         </span>
                         <span className="font-medium">
-                          {match.isBye
-                            ? `${getTeamName(match.team1Id)} (${t('bye')})`
-                            : `${getTeamName(match.team1Id)} ${tMatches('vs')} ${getTeamName(match.team2Id)}`}
+                          {getTeamLabel(match.team1Id, match.id, 0)} {tMatches('vs')} {getTeamLabel(match.team2Id, match.id, 1)}
                         </span>
                       </div>
 

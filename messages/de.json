@@ -93,6 +93,7 @@
     "needMinTeams": "Mindestens 2 Teams benötigt",
     "bye": "Freilos",
     "tbd": "TBD",
+    "winnerOfMatch": "Gewinner Spiel {number}",
     "winner": "Gewinner",
     "loser": "Verlierer",
     "score": "Ergebnis",

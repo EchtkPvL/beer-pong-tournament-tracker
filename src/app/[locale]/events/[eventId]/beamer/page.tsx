@@ -15,6 +15,31 @@ function getTeamName(teams: Team[], teamId: string | null): string {
   return team?.name ?? 'TBD';
 }
 
+function getFeederMatchNumber(
+  matches: Match[],
+  matchId: string,
+  slot: 0 | 1
+): number | null {
+  const feeders = matches
+    .filter((m) => !m.isBye && m.nextMatchId === matchId)
+    .sort((a, b) => a.matchNumber - b.matchNumber);
+
+  const match = matches.find((m) => m.id === matchId);
+  const filledSlots = (match?.team1Id ? 1 : 0) + (match?.team2Id ? 1 : 0);
+
+  let feederIdx: number;
+  if (filledSlots === 1 && slot === 1) {
+    feederIdx = 0;
+  } else if (filledSlots === 0) {
+    feederIdx = slot;
+  } else {
+    feederIdx = 0;
+  }
+
+  const feeder = feeders[feederIdx];
+  return feeder && feeder.matchNumber > 0 ? feeder.matchNumber : null;
+}
+
 function BeamerContent({ eventId }: { eventId: string }) {
   const t = useTranslations('beamer');
   const tMatches = useTranslations('matches');
@@ -100,9 +125,12 @@ function BeamerContent({ eventId }: { eventId: string }) {
                 <div className="flex gap-8">
                   {rounds
                     .sort((a, b) => a.roundNumber - b.roundNumber)
+                    .filter((round) =>
+                      matches.some((m) => m.roundId === round.id && !m.isBye)
+                    )
                     .map((round) => {
                       const roundMatches = matches
-                        .filter((m) => m.roundId === round.id)
+                        .filter((m) => m.roundId === round.id && !m.isBye)
                         .sort((a, b) => a.matchNumber - b.matchNumber);
 
                       return (
@@ -129,9 +157,11 @@ function BeamerContent({ eventId }: { eventId: string }) {
                                   )}
                                 >
                                   <span className="truncate">
-                                    {match.isBye
-                                      ? tBracket('bye')
-                                      : getTeamName(teams, match.team1Id)}
+                                    {match.team1Id
+                                      ? getTeamName(teams, match.team1Id)
+                                      : (getFeederMatchNumber(matches, match.id, 0) != null
+                                        ? tBracket('winnerOfMatch', { number: getFeederMatchNumber(matches, match.id, 0)! })
+                                        : 'TBD')}
                                   </span>
                                   {match.team1Score !== null && (
                                     <span className="ml-2 tabular-nums">
@@ -148,7 +178,11 @@ function BeamerContent({ eventId }: { eventId: string }) {
                                   )}
                                 >
                                   <span className="truncate">
-                                    {getTeamName(teams, match.team2Id)}
+                                    {match.team2Id
+                                      ? getTeamName(teams, match.team2Id)
+                                      : (getFeederMatchNumber(matches, match.id, 1) != null
+                                        ? tBracket('winnerOfMatch', { number: getFeederMatchNumber(matches, match.id, 1)! })
+                                        : 'TBD')}
                                   </span>
                                   {match.team2Score !== null && (
                                     <span className="ml-2 tabular-nums">
