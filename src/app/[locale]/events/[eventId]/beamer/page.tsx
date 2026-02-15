@@ -95,11 +95,6 @@ function BeamerContent({ eventId }: { eventId: string }) {
   return (
     <RealtimeProvider eventId={eventId} onEvent={handleRealtimeEvent}>
       <div className="flex h-screen flex-col overflow-hidden bg-gray-950 text-white">
-        {/* Top: Event name */}
-        <div className="shrink-0 border-b border-gray-800 px-8 py-4 text-center">
-          <h1 className="text-4xl font-bold">{event?.name ?? ''}</h1>
-        </div>
-
         {/* Main content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left 70%: Bracket area */}
