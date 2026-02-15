@@ -31,6 +31,7 @@ interface TeamManagerProps {
   eventId: string;
   initialTeams: Team[];
   onTeamsChange?: () => void;
+  onDisqualify?: () => void;
 }
 
 interface TeamFormData {
@@ -41,7 +42,7 @@ interface TeamFormData {
 
 const emptyForm: TeamFormData = { name: '', members: '', seed: '' };
 
-export function TeamManager({ eventId, initialTeams, onTeamsChange }: TeamManagerProps) {
+export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify }: TeamManagerProps) {
   const t = useTranslations('teams');
   const tCommon = useTranslations('common');
 
@@ -147,7 +148,7 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange }: TeamManage
     });
     if (res.ok) {
       await refreshTeams();
-      onTeamsChange?.();
+      onDisqualify?.();
     }
   };
 
@@ -270,7 +271,7 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange }: TeamManage
               {teams.map((team, index) => (
                 <tr key={team.id} className="border-b last:border-0">
                   <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2 font-medium">{team.name}</td>
+                  <td className={`px-4 py-2 font-medium${team.status === 'disqualified' ? ' line-through opacity-60' : ''}`}>{team.name}</td>
                   <td className="px-4 py-2 text-muted-foreground">
                     {team.members?.join(', ') ?? '-'}
                   </td>

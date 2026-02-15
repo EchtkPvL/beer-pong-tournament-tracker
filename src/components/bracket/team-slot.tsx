@@ -15,6 +15,8 @@ interface TeamSlotProps {
 export function TeamSlot({ team, isBye, isWinner, score, feederLabel }: TeamSlotProps) {
   const t = useTranslations('bracket');
 
+  const isDisqualified = team?.status === 'disqualified';
+
   const displayName = team
     ? team.name
     : feederLabel
@@ -28,7 +30,8 @@ export function TeamSlot({ team, isBye, isWinner, score, feederLabel }: TeamSlot
       className={cn(
         'flex items-center justify-between gap-2 px-2 py-1 text-sm',
         isWinner && 'font-bold text-primary',
-        !team && 'text-muted-foreground italic'
+        !team && 'text-muted-foreground italic',
+        isDisqualified && 'line-through opacity-60'
       )}
     >
       <span className="truncate">{displayName}</span>

@@ -614,7 +614,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
         {/* Teams Tab */}
         <TabsContent value="teams">
-          <TeamManager eventId={eventId} initialTeams={teams} onTeamsChange={handleTeamsChange} />
+          <TeamManager eventId={eventId} initialTeams={teams} onTeamsChange={handleTeamsChange} onDisqualify={fetchData} />
         </TabsContent>
 
         {/* Matches Tab */}

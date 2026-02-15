@@ -16,6 +16,12 @@ function getTeamName(teams: Team[], teamId: string | null): string {
   return team?.name ?? 'TBD';
 }
 
+function isTeamDQ(teams: Team[], teamId: string | null): boolean {
+  if (!teamId) return false;
+  const team = teams.find((t) => t.id === teamId);
+  return team?.status === 'disqualified';
+}
+
 const CYCLE_MS = Number(process.env.NEXT_PUBLIC_BEAMER_CYCLE_MS) || 10000;
 
 function BeamerContent({ eventId }: { eventId: string }) {
@@ -314,11 +320,11 @@ function BeamerContent({ eventId }: { eventId: string }) {
                       className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-900 p-3"
                     >
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium">
+                        <span className={`font-medium${isTeamDQ(teams, match.team1Id) ? ' line-through opacity-60' : ''}`}>
                           {getTeamName(teams, match.team1Id)}
                         </span>
                         <span className="text-gray-500">{tMatches('vs')}</span>
-                        <span className="font-medium">
+                        <span className={`font-medium${isTeamDQ(teams, match.team2Id) ? ' line-through opacity-60' : ''}`}>
                           {getTeamName(teams, match.team2Id)}
                         </span>
                       </div>
@@ -372,9 +378,9 @@ function BeamerContent({ eventId }: { eventId: string }) {
                             className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-900/50 p-3"
                           >
                             <div className="flex items-center gap-2 text-sm">
-                              <span>{getTeamName(teams, match.team1Id)}</span>
+                              <span className={isTeamDQ(teams, match.team1Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team1Id)}</span>
                               <span className="text-gray-500">{tMatches('vs')}</span>
-                              <span>{getTeamName(teams, match.team2Id)}</span>
+                              <span className={isTeamDQ(teams, match.team2Id) ? 'line-through opacity-60' : ''}>{getTeamName(teams, match.team2Id)}</span>
                             </div>
                             {match.tableNumber !== null && (
                               <Badge

@@ -191,10 +191,11 @@ export async function disqualifyTeam(teamId: string, eventId: number): Promise<v
     const opponentId = match.team1Id === teamId ? match.team2Id : match.team1Id;
 
     if (opponentId) {
-      // Opponent wins by forfeit
+      // Opponent wins by forfeit (0:1 from DQ'd team's perspective)
+      const dqIsTeam1 = match.team1Id === teamId;
       await db.update(matches).set({
-        team1Score: 0,
-        team2Score: 0,
+        team1Score: dqIsTeam1 ? 0 : 1,
+        team2Score: dqIsTeam1 ? 1 : 0,
         winnerId: opponentId,
         status: 'completed',
       }).where(eq(matches.id, match.id));
@@ -204,12 +205,11 @@ export async function disqualifyTeam(teamId: string, eventId: number): Promise<v
         await placeTeamInMatch(match.nextMatchId, opponentId);
       }
     } else {
-      // No opponent yet - mark as completed with the DQ team losing
-      // The slot will be filled when/if someone arrives
+      // No opponent yet - remove the DQ'd team from the slot so the
+      // future opponent can advance normally when they arrive
+      const dqIsTeam1 = match.team1Id === teamId;
       await db.update(matches).set({
-        team1Score: 0,
-        team2Score: 0,
-        status: 'completed',
+        ...(dqIsTeam1 ? { team1Id: null } : { team2Id: null }),
       }).where(eq(matches.id, match.id));
     }
   }

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import type { Match, Team } from '@/lib/db/schema';
 
 interface CurrentMatchesProps {
@@ -16,6 +17,12 @@ function getTeamName(teams: Team[], teamId: string | null): string {
   if (!teamId) return 'TBD';
   const team = teams.find((t) => t.id === teamId);
   return team?.name ?? 'TBD';
+}
+
+function isTeamDisqualified(teams: Team[], teamId: string | null): boolean {
+  if (!teamId) return false;
+  const team = teams.find((t) => t.id === teamId);
+  return team?.status === 'disqualified';
 }
 
 export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
@@ -115,11 +122,11 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                     <span className="text-xs text-muted-foreground">
                       #{match.matchNumber}
                     </span>
-                    <span className="font-medium">
+                    <span className={cn("font-medium", isTeamDisqualified(teams, match.team1Id) && "line-through opacity-60")}>
                       {getTeamName(teams, match.team1Id)}
                     </span>
                     <span className="text-muted-foreground">{t('vs')}</span>
-                    <span className="font-medium">
+                    <span className={cn("font-medium", isTeamDisqualified(teams, match.team2Id) && "line-through opacity-60")}>
                       {getTeamName(teams, match.team2Id)}
                     </span>
                   </div>
@@ -177,11 +184,11 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                         <span className="text-xs text-muted-foreground">
                           #{match.matchNumber}
                         </span>
-                        <span className="font-medium">
+                        <span className={cn("font-medium", isTeamDisqualified(teams, match.team1Id) && "line-through opacity-60")}>
                           {getTeamName(teams, match.team1Id)}
                         </span>
                         <span className="text-muted-foreground">{t('vs')}</span>
-                        <span className="font-medium">
+                        <span className={cn("font-medium", isTeamDisqualified(teams, match.team2Id) && "line-through opacity-60")}>
                           {getTeamName(teams, match.team2Id)}
                         </span>
                       </div>
@@ -227,11 +234,11 @@ export function CurrentMatches({ matches, teams }: CurrentMatchesProps) {
                         <span className="text-xs text-muted-foreground">
                           #{match.matchNumber}
                         </span>
-                        <span className="font-medium">
+                        <span className={cn("font-medium", isTeamDisqualified(teams, match.team1Id) && "line-through opacity-60")}>
                           {getTeamName(teams, match.team1Id)}
                         </span>
                         <span className="text-muted-foreground">{t('vs')}</span>
-                        <span className="font-medium">
+                        <span className={cn("font-medium", isTeamDisqualified(teams, match.team2Id) && "line-through opacity-60")}>
                           {getTeamName(teams, match.team2Id)}
                         </span>
                       </div>

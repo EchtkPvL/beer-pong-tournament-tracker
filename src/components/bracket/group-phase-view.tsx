@@ -204,16 +204,20 @@ export function GroupPhaseView({
                     </tr>
                   </thead>
                   <tbody>
-                    {standings.map((standing, idx) => (
+                    {standings.map((standing, idx) => {
+                      const standingTeam = teams.find(t2 => t2.id === standing.teamId);
+                      const isDQ = standingTeam?.status === 'disqualified';
+                      return (
                       <tr
                         key={standing.teamId}
                         className={cn(
                           'border-b border-border/50 last:border-0',
-                          idx === 0 && 'font-semibold'
+                          idx === 0 && 'font-semibold',
+                          isDQ && 'opacity-60'
                         )}
                       >
                         <td className="py-2 pr-3 text-muted-foreground">{idx + 1}</td>
-                        <td className="py-2 pr-3 truncate max-w-[160px]">{standing.teamName}</td>
+                        <td className={cn("py-2 pr-3 truncate max-w-[160px]", isDQ && 'line-through')}>{standing.teamName}</td>
                         <td className="py-2 pr-3 text-center">{standing.played}</td>
                         <td className="py-2 pr-3 text-center">{standing.wins}</td>
                         <td className="py-2 pr-3 text-center">{standing.losses}</td>
@@ -222,7 +226,8 @@ export function GroupPhaseView({
                         </td>
                         <td className="py-2 text-center font-bold">{standing.points}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </CardContent>
@@ -284,7 +289,7 @@ export function GroupPhaseView({
                             <span className="shrink-0 text-xs font-medium text-muted-foreground w-5">
                               {groupLabel}
                             </span>
-                            <span className={cn('flex-1 truncate', match.winnerId === match.team1Id && 'font-semibold')}>
+                            <span className={cn('flex-1 truncate', match.winnerId === match.team1Id && 'font-semibold', team1?.status === 'disqualified' && 'line-through opacity-60')}>
                               {team1?.name ?? t('tbd')}
                             </span>
                             {match.status === 'completed' && match.team1Score !== null && match.team2Score !== null ? (
@@ -294,7 +299,7 @@ export function GroupPhaseView({
                             ) : (
                               <span className="shrink-0 text-xs text-muted-foreground">vs</span>
                             )}
-                            <span className={cn('flex-1 truncate text-right', match.winnerId === match.team2Id && 'font-semibold')}>
+                            <span className={cn('flex-1 truncate text-right', match.winnerId === match.team2Id && 'font-semibold', team2?.status === 'disqualified' && 'line-through opacity-60')}>
                               {team2?.name ?? t('tbd')}
                             </span>
                           </button>
