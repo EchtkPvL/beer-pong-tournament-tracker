@@ -140,6 +140,11 @@
     "resetMatch": "Reset Match",
     "group": "Group {name}"
   },
+  "podium": {
+    "first": "1st Place",
+    "second": "2nd Place",
+    "third": "3rd Place"
+  },
   "standings": {
     "title": "Standings",
     "team": "Team",

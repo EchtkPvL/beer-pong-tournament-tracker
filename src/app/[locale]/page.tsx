@@ -10,6 +10,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
+import { getMatchesByEvent } from '@/lib/db/queries/matches';
+import { getRoundsByEvent } from '@/lib/db/queries/rounds';
+import { getTeamsByEvent } from '@/lib/db/queries/teams';
+import { PodiumServer } from '@/components/event/podium-server';
 
 
 function StatusBadge({
@@ -76,6 +80,17 @@ export default async function HomePage() {
   const currentEvent = allEvents.find((e) => e.status === 'active') ?? allEvents[0] ?? null;
   const otherEvents = allEvents.filter((e) => e.id !== currentEvent?.id);
 
+  // Fetch podium data for completed current event
+  let podiumData: { matches: Awaited<ReturnType<typeof getMatchesByEvent>>; rounds: Awaited<ReturnType<typeof getRoundsByEvent>>; teams: Awaited<ReturnType<typeof getTeamsByEvent>> } | null = null;
+  if (currentEvent?.status === 'completed') {
+    const [matches, rounds, teams] = await Promise.all([
+      getMatchesByEvent(currentEvent.id),
+      getRoundsByEvent(currentEvent.id),
+      getTeamsByEvent(currentEvent.id),
+    ]);
+    podiumData = { matches, rounds, teams };
+  }
+
   const statusLabels = {
     draft: t('draft'),
     active: t('active'),
@@ -130,6 +145,15 @@ export default async function HomePage() {
                     {t('teamCount', { count: currentEvent.teamCount })}
                   </div>
                 </div>
+                {podiumData && (
+                  <div className="mt-6">
+                    <PodiumServer
+                      matches={podiumData.matches}
+                      rounds={podiumData.rounds}
+                      teams={podiumData.teams}
+                    />
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="gap-2">
                 <Button asChild>

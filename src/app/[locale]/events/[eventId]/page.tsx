@@ -9,6 +9,7 @@ import { BracketView } from '@/components/bracket/bracket-view';
 import { CurrentMatches } from '@/components/event/current-matches';
 import { EventStats } from '@/components/event/event-stats';
 import { TeamStandings } from '@/components/event/team-standings';
+import { Podium } from '@/components/event/podium';
 import { RealtimeProvider } from '@/components/realtime/realtime-provider';
 import type { Event, Team, Match, Round } from '@/lib/db/schema';
 
@@ -139,6 +140,10 @@ function EventPageContent({ eventId }: { eventId: string }) {
               </span>
             </div>
           </div>
+
+          {event.status === 'completed' && (
+            <Podium matches={matches} rounds={rounds} teams={teams} />
+          )}
 
           <EventStats matches={matches} teams={teams} />
 

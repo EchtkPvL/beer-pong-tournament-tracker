@@ -140,6 +140,11 @@
     "resetMatch": "Entscheidungsspiel",
     "group": "Gruppe {name}"
   },
+  "podium": {
+    "first": "1. Platz",
+    "second": "2. Platz",
+    "third": "3. Platz"
+  },
   "standings": {
     "title": "Tabelle",
     "team": "Team",
