@@ -63,13 +63,18 @@ export function getPodium(matches: Match[], rounds: Round[]): PodiumEntry[] {
       }
     }
   } else {
-    // Single elimination: losers of semi-finals
+    // Single elimination: losers of semi-finals, but only if they
+    // won a preceding match. With 4 teams the semis are the first
+    // round, so losers never won anything — skip 3rd place.
     const semiFinals = matches.filter(m =>
       m.nextMatchId === finalMatch.id &&
       m.status === 'completed' &&
       !m.isBye
     );
     for (const semi of semiFinals) {
+      const hadPriorMatch = matches.some(m => m.nextMatchId === semi.id);
+      if (!hadPriorMatch) continue;
+
       const loser = semi.team1Id === semi.winnerId
         ? semi.team2Id
         : semi.team1Id;
