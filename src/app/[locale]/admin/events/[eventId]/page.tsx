@@ -242,6 +242,8 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
   const doSave = async () => {
     setSaving(true);
     try {
+      const needsRegeneration = hasDestructiveChanges();
+
       const payload: Record<string, unknown> = {
         name: editName || undefined,
         date: editDate || undefined,
@@ -261,9 +263,11 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
       });
       if (res.ok) {
         await fetchData();
-        const activeCount = teams.filter((t) => t.status === 'active').length;
-        if (activeCount >= 2) {
-          await generateBracket();
+        if (needsRegeneration) {
+          const activeCount = teams.filter((t) => t.status === 'active').length;
+          if (activeCount >= 2) {
+            await generateBracket();
+          }
         }
       }
     } catch {

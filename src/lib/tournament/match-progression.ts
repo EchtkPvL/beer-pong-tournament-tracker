@@ -2,6 +2,8 @@ import { db } from '@/lib/db';
 import { matches, teams } from '@/lib/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 import { logEvent } from '@/lib/realtime/event-log';
+import { allMatchesCompleted } from '@/lib/db/queries/matches';
+import { getEventById, updateEvent } from '@/lib/db/queries/events';
 
 /**
  * Set a match result and advance the winner (and loser in double elim)
@@ -44,6 +46,13 @@ export async function setMatchResult(
     team2Score,
     winnerId,
   });
+
+  // Auto-complete event when all matches are done
+  const event = await getEventById(match.eventId);
+  if (event && event.status === 'active' && await allMatchesCompleted(match.eventId)) {
+    await updateEvent(match.eventId, { status: 'completed' });
+    await logEvent(match.eventId, 'event_completed', {});
+  }
 }
 
 /**
