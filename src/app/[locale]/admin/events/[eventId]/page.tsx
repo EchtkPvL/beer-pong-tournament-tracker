@@ -179,7 +179,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
       body: JSON.stringify({ status: 'draft', resetMatches: true }),
     });
     if (res.ok) {
-      await fetchData();
+      await generateBracket();
     }
   };
 
