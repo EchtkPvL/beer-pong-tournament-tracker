@@ -139,11 +139,14 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
       const res = await fetch(`/api/events/${eventId}/generate-bracket`, {
         method: 'POST',
       });
-      if (res.ok) {
+      if (!res.ok) {
+        // Generation failed — still refresh state so UI stays in sync
         await fetchData();
+        return;
       }
+      await fetchData();
     } catch {
-      // silently fail
+      await fetchData();
     }
   }, [eventId, fetchData]);
 
@@ -153,15 +156,20 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
       if (!teamsRes.ok) return;
       const freshTeams: Team[] = await teamsRes.json();
       const activeCount = freshTeams.filter((t) => t.status === 'active').length;
-      if (activeCount >= 2) {
+
+      // Group mode needs at least groupCount*2 teams (default 2 groups → 4 teams)
+      const minForGroup = event?.mode === 'group' ? (event.groupCount || 2) * 2 : 2;
+      const minTeams = event?.mode === 'group' ? Math.max(2, minForGroup) : 2;
+
+      if (activeCount >= minTeams) {
         await generateBracket();
       } else {
         await fetchData();
       }
     } catch {
-      // silently fail
+      await fetchData();
     }
-  }, [eventId, generateBracket, fetchData]);
+  }, [eventId, event?.mode, event?.groupCount, generateBracket, fetchData]);
 
   const handleActivate = async () => {
     const res = await fetch(`/api/events/${eventId}`, {

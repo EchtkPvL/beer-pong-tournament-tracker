@@ -32,23 +32,31 @@ export async function POST(
     }
 
     const teams = await getTeamsByEvent(eventId);
-    if (teams.length < 2) {
+    const activeTeams = teams.filter(t => t.status === 'active');
+    if (activeTeams.length < 2) {
       return NextResponse.json({ error: 'Need at least 2 teams' }, { status: 400 });
     }
 
-    // Delete existing bracket data
-    await deleteMatchesByEvent(eventId);
-    await deleteRoundsByEvent(eventId);
-
     // Prepare team seeds
-    const teamSeeds: TeamSeed[] = teams
-      .filter(t => t.status === 'active')
+    const teamSeeds: TeamSeed[] = activeTeams
       .map((t, i) => ({
         id: t.id,
         seed: t.seed || i + 1,
         name: t.name,
       }));
 
+    // Validate minimum team count for group mode before deleting existing data
+    if (event.mode === 'group') {
+      const groupCount = event.groupCount || 2;
+      if (teamSeeds.length < groupCount * 2) {
+        return NextResponse.json(
+          { error: `Need at least ${groupCount * 2} teams for ${groupCount} groups` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Generate bracket BEFORE deleting old data to ensure it succeeds
     let bracket;
 
     switch (event.mode) {
@@ -64,6 +72,10 @@ export async function POST(
       default:
         return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
     }
+
+    // Delete existing bracket data only after generation succeeded
+    await deleteMatchesByEvent(eventId);
+    await deleteRoundsByEvent(eventId);
 
     // Assign playing rounds based on table count
     assignSchedule(bracket, event.tableCount);
