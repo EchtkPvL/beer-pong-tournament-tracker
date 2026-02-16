@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/auth/session';
 import { updateMatchSchema, setMatchResultSchema } from '@/lib/validators';
 import { getMatchById, updateMatch } from '@/lib/db/queries/matches';
+import { getEventById } from '@/lib/db/queries/events';
 import { setMatchResult, clearMatchResult } from '@/lib/tournament/match-progression';
 
 type RouteParams = { params: Promise<{ eventId: string; matchId: string }> };
@@ -13,12 +14,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { matchId } = await params;
+    const { eventId, matchId } = await params;
     const body = await request.json();
 
     const existing = await getMatchById(matchId);
     if (!existing) {
       return NextResponse.json({ error: 'Match not found' }, { status: 404 });
+    }
+
+    // Block result changes on draft events
+    const isResultSubmission =
+      body.team1Score !== undefined && body.team2Score !== undefined &&
+      body.team1Score !== null && body.team2Score !== null;
+    if (isResultSubmission || body.clearResult) {
+      const event = await getEventById(Number(eventId));
+      if (event && event.status === 'draft') {
+        return NextResponse.json({ error: 'Cannot set results on a draft event' }, { status: 400 });
+      }
     }
 
     // Check if this is a result submission (both scores present)

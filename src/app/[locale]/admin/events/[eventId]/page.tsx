@@ -711,7 +711,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                             <button
                               key={match.id}
                               onClick={() => {
-                                if (match.team1Id && match.team2Id) {
+                                if (match.team1Id && match.team2Id && event.status !== 'draft') {
                                   setSelectedMatch({
                                     id: match.id,
                                     matchNumber: match.matchNumber,
@@ -723,11 +723,11 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                                   setResultDialogOpen(true);
                                 }
                               }}
-                              disabled={!match.team1Id || !match.team2Id}
+                              disabled={!match.team1Id || !match.team2Id || event.status === 'draft'}
                               className={cn(
                                 'flex w-full items-center justify-between rounded-md border p-3 text-left text-sm transition-colors',
-                                match.team1Id && match.team2Id && 'hover:bg-accent cursor-pointer',
-                                (!match.team1Id || !match.team2Id) && 'cursor-default opacity-60'
+                                match.team1Id && match.team2Id && event.status !== 'draft' && 'hover:bg-accent cursor-pointer',
+                                (!match.team1Id || !match.team2Id || event.status === 'draft') && 'cursor-default opacity-60'
                               )}
                             >
                               <div className="flex flex-col gap-1">
