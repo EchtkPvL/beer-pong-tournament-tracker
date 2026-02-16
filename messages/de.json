@@ -71,7 +71,10 @@
     "archiveConfirm": "Nicht alle Spiele wurden gespielt. Möchtest du das Turnier wirklich beenden?",
     "settingsWarningTitle": "Achtung: Turnier wird zurückgesetzt",
     "settingsWarningDescription": "Änderungen am Turniermodus oder den Gruppeneinstellungen erstellen den Spielplan neu. Alle bisherigen Ergebnisse gehen verloren.",
-    "matchCount": "{count, plural, one {# Spiel} other {# Spiele}}"
+    "matchCount": "{count, plural, one {# Spiel} other {# Spiele}}",
+    "revertToDraft": "Zurück zu Entwurf",
+    "revertToDraftTitle": "Achtung: Zurück zu Entwurf",
+    "revertToDraftDescription": "Das Turnier wird zurückgesetzt und alle Spiele und Ergebnisse werden gelöscht. Teams bleiben erhalten. Bist du sicher?"
   },
   "teams": {
     "title": "Teams",

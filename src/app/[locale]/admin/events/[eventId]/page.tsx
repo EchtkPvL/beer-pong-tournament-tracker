@@ -172,6 +172,17 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
+  const handleRevertToDraft = async () => {
+    const res = await fetch(`/api/events/${eventId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'draft', resetMatches: true }),
+    });
+    if (res.ok) {
+      await fetchData();
+    }
+  };
+
   const handleComplete = async () => {
     const res = await fetch(`/api/events/${eventId}`, {
       method: 'PUT',
@@ -328,6 +339,8 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     }
   };
 
+  const isDraft = event?.status === 'draft';
+
   // Group mode helpers
   const isGroupMode = event?.mode === 'group';
   const groupMatches = isGroupMode ? matches.filter(m => m.groupId && !m.isBye) : [];
@@ -423,6 +436,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     <Select
                       value={editMode}
                       onValueChange={(v) => setEditMode(v)}
+                      disabled={!isDraft}
                     >
                       <SelectTrigger id="edit-mode">
                         <SelectValue />
@@ -450,6 +464,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                       onChange={(e) =>
                         setEditTableCount(parseInt(e.target.value, 10) || 1)
                       }
+                      disabled={!isDraft}
                       className="w-24"
                     />
                   </div>
@@ -584,6 +599,30 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     )
                   )}
 
+                  {!isDraft && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" variant="outline">
+                          {t('revertToDraft')}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('revertToDraftTitle')}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('revertToDraftDescription')}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRevertToDraft}>
+                            {tCommon('confirm')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button type="button" variant="destructive">{tCommon('delete')}</Button>
@@ -606,7 +645,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     </AlertDialogContent>
                   </AlertDialog>
 
-                  {matches.length > 0 && (
+                  {matches.length > 0 && isDraft && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button type="button" variant="outline" size="sm">
@@ -648,7 +687,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
         {/* Teams Tab */}
         <TabsContent value="teams">
-          <TeamManager eventId={eventId} initialTeams={teams} hasMatchResults={matches.some((m) => !m.isBye && m.status === 'completed')} onTeamsChange={handleTeamsChange} onDisqualify={fetchData} />
+          <TeamManager eventId={eventId} initialTeams={teams} hasMatchResults={matches.some((m) => !m.isBye && m.status === 'completed')} addDisabled={!isDraft} onTeamsChange={handleTeamsChange} onDisqualify={fetchData} />
         </TabsContent>
 
         {/* Matches Tab */}

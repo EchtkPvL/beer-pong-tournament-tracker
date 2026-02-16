@@ -31,6 +31,7 @@ interface TeamManagerProps {
   eventId: string;
   initialTeams: Team[];
   hasMatchResults?: boolean;
+  addDisabled?: boolean;
   onTeamsChange?: () => void;
   onDisqualify?: () => void;
 }
@@ -43,7 +44,7 @@ interface TeamFormData {
 
 const emptyForm: TeamFormData = { name: '', members: '', seed: '' };
 
-export function TeamManager({ eventId, initialTeams, hasMatchResults, onTeamsChange, onDisqualify }: TeamManagerProps) {
+export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisabled, onTeamsChange, onDisqualify }: TeamManagerProps) {
   const t = useTranslations('teams');
   const tCommon = useTranslations('common');
 
@@ -214,6 +215,7 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, onTeamsCha
           <DialogTrigger asChild>
             <Button
               size="sm"
+              disabled={addDisabled}
               onClick={() => {
                 setFormData(emptyForm);
                 setAddOpen(true);

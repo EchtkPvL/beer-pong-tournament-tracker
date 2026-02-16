@@ -71,7 +71,10 @@
     "archiveConfirm": "Not all matches have been played. Are you sure you want to end this tournament?",
     "settingsWarningTitle": "Warning: Tournament Reset",
     "settingsWarningDescription": "Changing the tournament mode or group settings will regenerate the bracket. All existing match results will be lost.",
-    "matchCount": "{count, plural, one {# match} other {# matches}}"
+    "matchCount": "{count, plural, one {# match} other {# matches}}",
+    "revertToDraft": "Revert to Draft",
+    "revertToDraftTitle": "Warning: Revert to Draft",
+    "revertToDraftDescription": "This will reset the tournament and delete all matches and results. Teams will be kept. Are you sure?"
   },
   "teams": {
     "title": "Teams",
