@@ -575,13 +575,13 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
 
                   {event.status === 'active' && (
                     allMatchesPlayed ? (
-                      <Button type="button" onClick={handleComplete} variant="secondary">
+                      <Button type="button" onClick={handleComplete} variant="success">
                         {t('complete')}
                       </Button>
                     ) : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button type="button" variant="secondary">
+                          <Button type="button" variant="success">
                             {t('complete')}
                           </Button>
                         </AlertDialogTrigger>
