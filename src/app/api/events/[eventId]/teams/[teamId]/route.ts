@@ -45,7 +45,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json(team);
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('teams_event_name_unique')) {
+      return NextResponse.json(
+        { error: 'Team name already exists' },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

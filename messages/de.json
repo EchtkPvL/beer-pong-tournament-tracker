@@ -93,7 +93,8 @@
     "deleteConfirm": "Team wirklich löschen?",
     "addWarningTitle": "Achtung: Spielplan wird zurückgesetzt",
     "addWarningDescription": "Das Hinzufügen eines Teams erstellt den Spielplan neu. Alle bisherigen Ergebnisse gehen verloren.",
-    "count": "{count} Teams"
+    "count": "{count} Teams",
+    "duplicateName": "Ein Team mit diesem Namen existiert bereits"
   },
   "bracket": {
     "generate": "Spielplan erstellen",

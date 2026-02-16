@@ -55,6 +55,7 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
   const [formData, setFormData] = useState<TeamFormData>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddWarning, setShowAddWarning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const refreshTeams = async () => {
     try {
@@ -68,8 +69,19 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
     }
   };
 
+  const getErrorMessage = async (res: Response): Promise<string> => {
+    try {
+      const data = await res.json();
+      if (res.status === 409) return t('duplicateName');
+      return data.error || tCommon('error');
+    } catch {
+      return tCommon('error');
+    }
+  };
+
   const handleAdd = async () => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const members = formData.members
         .split(',')
@@ -90,9 +102,14 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
       if (res.ok) {
         setFormData(emptyForm);
         setAddOpen(false);
+        setError(null);
         await refreshTeams();
         onTeamsChange?.();
+      } else {
+        setError(await getErrorMessage(res));
       }
+    } catch {
+      setError(tCommon('error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,6 +118,7 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
   const handleEdit = async () => {
     if (!editingTeam) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const members = formData.members
         .split(',')
@@ -125,9 +143,14 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
         setFormData(emptyForm);
         setEditOpen(false);
         setEditingTeam(null);
+        setError(null);
         await refreshTeams();
         onTeamsChange?.();
+      } else {
+        setError(await getErrorMessage(res));
       }
+    } catch {
+      setError(tCommon('error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -162,6 +185,7 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
       members: team.members?.join(', ') ?? '',
       seed: team.seed?.toString() ?? '',
     });
+    setError(null);
     setEditOpen(true);
   };
 
@@ -218,6 +242,7 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
               disabled={addDisabled}
               onClick={() => {
                 setFormData(emptyForm);
+                setError(null);
                 setAddOpen(true);
               }}
             >
@@ -230,6 +255,9 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
             </DialogHeader>
             <form onSubmit={(e) => { e.preventDefault(); if (hasMatchResults) { setShowAddWarning(true); } else { handleAdd(); } }}>
               {teamFormFields}
+              {error && addOpen && (
+                <p className="mt-2 text-sm text-destructive">{error}</p>
+              )}
               <DialogFooter className="mt-4">
                 <Button
                   type="button"
@@ -398,6 +426,9 @@ export function TeamManager({ eventId, initialTeams, hasMatchResults, addDisable
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleEdit(); }}>
             {teamFormFields}
+            {error && editOpen && (
+              <p className="mt-2 text-sm text-destructive">{error}</p>
+            )}
             <DialogFooter className="mt-4">
               <Button
                 type="button"

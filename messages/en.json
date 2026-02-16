@@ -93,7 +93,8 @@
     "deleteConfirm": "Really delete this team?",
     "addWarningTitle": "Warning: Bracket Reset",
     "addWarningDescription": "Adding a team will regenerate the bracket. All existing match results will be lost.",
-    "count": "{count} Teams"
+    "count": "{count} Teams",
+    "duplicateName": "A team with this name already exists"
   },
   "bracket": {
     "generate": "Generate Bracket",

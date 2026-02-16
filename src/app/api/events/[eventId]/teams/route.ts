@@ -40,7 +40,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const team = await createTeam(eventId, parsed.data);
     return NextResponse.json(team, { status: 201 });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('teams_event_name_unique')) {
+      return NextResponse.json(
+        { error: 'Team name already exists' },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
