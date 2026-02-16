@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { matches, teams } from '@/lib/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { matches, teams, rounds } from '@/lib/db/schema';
+import { eq, and, or, ne } from 'drizzle-orm';
 import { logEvent } from '@/lib/realtime/event-log';
 import { allMatchesCompleted } from '@/lib/db/queries/matches';
 import { getEventById, updateEvent } from '@/lib/db/queries/events';
@@ -50,6 +50,16 @@ export async function setMatchResult(
   // Auto-complete event when all matches are done
   const event = await getEventById(match.eventId);
   if (event && event.status === 'active' && await allMatchesCompleted(match.eventId)) {
+    // Don't auto-complete group mode events until knockout rounds exist
+    if (event.mode === 'group') {
+      const eventRounds = await db.select({ phase: rounds.phase })
+        .from(rounds)
+        .where(and(eq(rounds.eventId, match.eventId), ne(rounds.phase, 'group')));
+      if (eventRounds.length === 0) {
+        // Only group rounds exist — knockout hasn't been generated yet
+        return;
+      }
+    }
     await updateEvent(match.eventId, { status: 'completed' });
     await logEvent(match.eventId, 'event_completed', {});
   }
