@@ -382,7 +382,11 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{event.name || t('title')}</h1>
+          <h1 className="text-2xl font-bold">
+            <Link href={`/events/${eventId}`} className="hover:underline">
+              {event.name || t('title')}
+            </Link>
+          </h1>
           <p className="text-sm text-muted-foreground">
             {tAdmin('eventManagement')}
           </p>

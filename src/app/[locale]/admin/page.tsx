@@ -65,7 +65,11 @@ export default async function AdminDashboardPage() {
                 <tbody>
                   {allEvents.map((event) => (
                     <tr key={event.id} className="border-b last:border-0">
-                      <td className="py-3 pr-4 font-medium">{event.name || '-'}</td>
+                      <td className="py-3 pr-4 font-medium">
+                        <Link href={`/events/${event.id}`} className="hover:underline">
+                          {event.name || '-'}
+                        </Link>
+                      </td>
                       <td className="py-3 pr-4">{event.date || '-'}</td>
                       <td className="py-3 pr-4">{event.location || '-'}</td>
                       <td className="py-3 pr-4">
