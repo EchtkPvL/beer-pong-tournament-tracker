@@ -65,6 +65,7 @@
     "latestEvent": "Latest Tournament",
     "pastEvents": "Past Tournaments",
     "viewEvent": "View Tournament",
+    "openBeamer": "Beamer",
     "manageEvent": "Manage Tournament",
     "openEventExists": "An open tournament already exists. Complete or delete it first.",
     "archiveConfirm": "Not all matches have been played. Are you sure you want to end this tournament?",

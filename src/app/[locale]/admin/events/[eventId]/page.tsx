@@ -540,6 +540,14 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     </Link>
                   </Button>
 
+                  {event.status === 'active' && (
+                    <Button variant="outline" asChild>
+                      <Link href={`/events/${eventId}/beamer`} target="_blank">
+                        {t('openBeamer')}
+                      </Link>
+                    </Button>
+                  )}
+
                   {event.status === 'draft' && (
                     <Button type="button" onClick={handleActivate} variant="secondary">
                       {t('activate')}

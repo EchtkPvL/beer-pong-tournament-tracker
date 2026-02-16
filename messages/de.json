@@ -65,6 +65,7 @@
     "latestEvent": "Letztes Turnier",
     "pastEvents": "Vergangene Turniere",
     "viewEvent": "Turnier ansehen",
+    "openBeamer": "Beamer",
     "manageEvent": "Turnier verwalten",
     "openEventExists": "Es gibt bereits ein offenes Turnier. Schließe oder lösche es zuerst.",
     "archiveConfirm": "Nicht alle Spiele wurden gespielt. Möchtest du das Turnier wirklich beenden?",
