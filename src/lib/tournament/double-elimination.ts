@@ -118,7 +118,7 @@ export function generateDoubleEliminationBracket(
   // Create losers bracket matches
   // Pattern: odd losers rounds receive drop-downs from winners, even rounds are internal
   const losersRoundRefs = rounds.filter(r => r.phase === 'losers');
-  let prevLosersCount = bracketSize / 2; // First losers round has bracketSize/4 matches (pairs of losers)
+  let prevLosersCount = bracketSize / 4; // First losers round has bracketSize/4 matches (pairs of losers)
 
   for (let lr = 0; lr < losersRoundCount; lr++) {
     let matchCount: number;
@@ -257,6 +257,48 @@ export function generateDoubleEliminationBracket(
   for (const match of allWinnersMatches[0]) {
     if ((match.team1Id && !match.team2Id) || (!match.team1Id && match.team2Id)) {
       match.isBye = true;
+    }
+  }
+
+  // Mark losers bracket byes caused by winners bracket byes.
+  // WR0 byes produce no loser, so their target LR0 matches may be
+  // starved of teams. Cascade through the losers bracket to mark
+  // any match that will receive fewer than 2 teams as a bye.
+  const expectedTeams: Record<string, number> = {};
+
+  for (const roundMatches of allLosersMatches) {
+    for (const match of roundMatches) {
+      expectedTeams[match.id] = 0;
+    }
+  }
+
+  // WR0: only non-bye matches send a loser
+  for (const match of allWinnersMatches[0]) {
+    if (!match.isBye && match.loserNextMatchId) {
+      expectedTeams[match.loserNextMatchId] = (expectedTeams[match.loserNextMatchId] || 0) + 1;
+    }
+  }
+
+  // WR1+: every match always produces a loser
+  for (let wr = 1; wr < winnersRounds; wr++) {
+    for (const match of allWinnersMatches[wr]) {
+      if (match.loserNextMatchId) {
+        expectedTeams[match.loserNextMatchId] = (expectedTeams[match.loserNextMatchId] || 0) + 1;
+      }
+    }
+  }
+
+  // Walk losers rounds in order and cascade
+  for (let lr = 0; lr < losersRoundCount; lr++) {
+    for (const match of allLosersMatches[lr]) {
+      const expected = expectedTeams[match.id] || 0;
+      if (expected < 2) {
+        match.isBye = true;
+      }
+      // A match that receives at least 1 team produces a winner
+      if (expected > 0 && match.nextMatchId) {
+        expectedTeams[match.nextMatchId] = (expectedTeams[match.nextMatchId] || 0) + 1;
+      }
     }
   }
 
