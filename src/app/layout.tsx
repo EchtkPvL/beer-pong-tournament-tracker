@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Beer Pong Tournament Tracker",
   description: "Manage beer pong tournaments with brackets, timers, and live updates",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/icon.png" },
 };
 
 export default function RootLayout({
