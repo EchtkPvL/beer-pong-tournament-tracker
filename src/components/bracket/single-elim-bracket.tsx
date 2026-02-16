@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { buildMatchTree, MatchTreeView } from './match-tree';
+import { translateRoundName } from '@/lib/tournament/round-names';
 
 interface SingleElimBracketProps {
   matches: Match[];
@@ -22,6 +23,7 @@ export function SingleElimBracket({
   isAdmin,
 }: SingleElimBracketProps) {
   const t = useTranslations('bracket');
+  const tRounds = useTranslations('rounds');
 
   const teamsMap = useMemo(() => {
     const map: Record<string, Team> = {};
@@ -34,6 +36,11 @@ export function SingleElimBracket({
   const sortedRounds = useMemo(
     () => [...rounds].sort((a, b) => a.roundNumber - b.roundNumber),
     [rounds]
+  );
+
+  const translatedRounds = useMemo(() =>
+    sortedRounds.map(r => ({ ...r, name: translateRoundName(r, rounds, tRounds) })),
+    [sortedRounds, rounds, tRounds]
   );
 
   // Find the final match (no nextMatchId)
@@ -55,7 +62,7 @@ export function SingleElimBracket({
     <MatchTreeView
       allMatches={matches}
       root={tree}
-      rounds={sortedRounds}
+      rounds={translatedRounds}
       teams={teamsMap}
       onMatchClick={onMatchClick}
       isAdmin={isAdmin}

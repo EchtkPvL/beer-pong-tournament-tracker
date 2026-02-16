@@ -19,6 +19,7 @@ import {
 import { MatchResultForm } from '@/components/admin/match-result-form';
 import { cn } from '@/lib/utils';
 import type { Event, Match, Round, Team } from '@/lib/db/schema';
+import { translateRoundName } from '@/lib/tournament/round-names';
 
 interface BracketAdminProps {
   eventId: string;
@@ -49,6 +50,7 @@ export function BracketAdmin({
   const t = useTranslations('bracket');
   const tCommon = useTranslations('common');
   const tMatches = useTranslations('matches');
+  const tRounds = useTranslations('rounds');
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
@@ -292,7 +294,7 @@ export function BracketAdmin({
           <Card key={round.id}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{round.name}</CardTitle>
+                <CardTitle className="text-base">{translateRoundName(round, rounds, tRounds)}</CardTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant={getStatusVariant(round.status)}>
                     {round.status === 'completed'

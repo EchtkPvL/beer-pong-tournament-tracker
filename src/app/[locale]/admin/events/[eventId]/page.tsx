@@ -32,6 +32,7 @@ import { MatchResultForm } from '@/components/admin/match-result-form';
 import { TimerControls } from '@/components/timer/timer-controls';
 import { cn } from '@/lib/utils';
 import type { Event, Team, Match, Round } from '@/lib/db/schema';
+import { translateRoundName } from '@/lib/tournament/round-names';
 
 interface MatchWithTeamNames {
   id: string;
@@ -53,6 +54,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
   const tCommon = useTranslations('common');
   const tMatches = useTranslations('matches');
   const tBracket = useTranslations('bracket');
+  const tRounds = useTranslations('rounds');
   const router = useRouter();
 
   const [event, setEvent] = useState<Event | null>(null);
@@ -780,7 +782,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                                   </span>
                                   {round && (
                                     <Badge variant="outline" className="text-xs">
-                                      {round.name}
+                                      {translateRoundName(round, rounds, tRounds)}
                                     </Badge>
                                   )}
                                 </div>

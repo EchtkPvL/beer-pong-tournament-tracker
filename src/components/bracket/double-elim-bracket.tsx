@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import type { Match, Round, Team } from '@/lib/db/schema';
 import { buildMatchTree, MatchTreeView } from './match-tree';
+import { translateRoundName } from '@/lib/tournament/round-names';
 
 interface DoubleElimBracketProps {
   matches: Match[];
@@ -24,6 +25,7 @@ export function DoubleElimBracket({
   visiblePhase,
 }: DoubleElimBracketProps) {
   const t = useTranslations('bracket');
+  const tRounds = useTranslations('rounds');
 
   const teamsMap = useMemo(() => {
     const map: Record<string, Team> = {};
@@ -55,6 +57,20 @@ export function DoubleElimBracket({
 
     return { winnersRounds: winners, losersRounds: losers, finalsRounds: finals };
   }, [rounds]);
+
+  // Translate round names
+  const trWinnersRounds = useMemo(() =>
+    winnersRounds.map(r => ({ ...r, name: translateRoundName(r, rounds, tRounds) })),
+    [winnersRounds, rounds, tRounds]
+  );
+  const trLosersRounds = useMemo(() =>
+    losersRounds.map(r => ({ ...r, name: translateRoundName(r, rounds, tRounds) })),
+    [losersRounds, rounds, tRounds]
+  );
+  const trFinalsRounds = useMemo(() =>
+    finalsRounds.map(r => ({ ...r, name: translateRoundName(r, rounds, tRounds) })),
+    [finalsRounds, rounds, tRounds]
+  );
 
   // Build a set of round IDs per phase for fast lookup
   const roundPhase = useMemo(() => {
@@ -135,7 +151,7 @@ export function DoubleElimBracket({
           <MatchTreeView
             allMatches={matches}
             root={winnersTree}
-            rounds={winnersRounds}
+            rounds={trWinnersRounds}
             teams={teamsMap}
             onMatchClick={onMatchClick}
             isAdmin={isAdmin}
@@ -159,7 +175,7 @@ export function DoubleElimBracket({
           <MatchTreeView
             allMatches={matches}
             root={losersTree}
-            rounds={losersRounds}
+            rounds={trLosersRounds}
             teams={teamsMap}
             onMatchClick={onMatchClick}
             isAdmin={isAdmin}
@@ -182,7 +198,7 @@ export function DoubleElimBracket({
             <MatchTreeView
               allMatches={matches}
               root={finalsTree}
-              rounds={finalsRounds}
+              rounds={trFinalsRounds}
               teams={teamsMap}
               onMatchClick={onMatchClick}
               isAdmin={isAdmin}

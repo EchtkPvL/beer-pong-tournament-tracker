@@ -222,6 +222,7 @@ export function generateDoubleEliminationBracket(
   };
 
   grandFinalsMatch.nextMatchId = resetMatch.id;
+  grandFinalsMatch.loserNextMatchId = resetMatch.id;
 
   // Winners bracket final -> grand finals
   const winnersLast = allWinnersMatches[winnersRounds - 1];
