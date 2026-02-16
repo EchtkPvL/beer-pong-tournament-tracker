@@ -601,6 +601,31 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                     )
                   )}
 
+                  <div className="ml-auto flex flex-wrap gap-3">
+                  {matches.length > 0 && isDraft && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          {tBracket('regenerate')}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{tBracket('regenerate')}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {tBracket('regenerateConfirm')}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={generateBracket}>
+                            {tCommon('confirm')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
                   {!isDraft && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -646,30 +671,7 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-
-                  {matches.length > 0 && isDraft && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button type="button" variant="outline" size="sm">
-                          {tBracket('regenerate')}
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{tBracket('regenerate')}</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {tBracket('regenerateConfirm')}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
-                          <AlertDialogAction onClick={generateBracket}>
-                            {tCommon('confirm')}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                  </div>
                 </div>
                 </form>
               </CardContent>
