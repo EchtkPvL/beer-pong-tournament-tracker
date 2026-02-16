@@ -30,7 +30,7 @@ import type { Team } from '@/lib/db/schema';
 interface TeamManagerProps {
   eventId: string;
   initialTeams: Team[];
-  hasMatches?: boolean;
+  hasMatchResults?: boolean;
   onTeamsChange?: () => void;
   onDisqualify?: () => void;
 }
@@ -43,7 +43,7 @@ interface TeamFormData {
 
 const emptyForm: TeamFormData = { name: '', members: '', seed: '' };
 
-export function TeamManager({ eventId, initialTeams, hasMatches, onTeamsChange, onDisqualify }: TeamManagerProps) {
+export function TeamManager({ eventId, initialTeams, hasMatchResults, onTeamsChange, onDisqualify }: TeamManagerProps) {
   const t = useTranslations('teams');
   const tCommon = useTranslations('common');
 
@@ -226,7 +226,7 @@ export function TeamManager({ eventId, initialTeams, hasMatches, onTeamsChange, 
             <DialogHeader>
               <DialogTitle>{t('add')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={(e) => { e.preventDefault(); if (hasMatches) { setShowAddWarning(true); } else { handleAdd(); } }}>
+            <form onSubmit={(e) => { e.preventDefault(); if (hasMatchResults) { setShowAddWarning(true); } else { handleAdd(); } }}>
               {teamFormFields}
               <DialogFooter className="mt-4">
                 <Button
