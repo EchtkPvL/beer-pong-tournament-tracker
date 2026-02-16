@@ -108,6 +108,8 @@
     "loser": "Verlierer",
     "score": "Ergebnis",
     "setResult": "Ergebnis eintragen",
+    "scoresRequired": "Bitte beide Ergebnisse eingeben",
+    "scoresTied": "Ergebnisse dürfen nicht gleich sein",
     "clearResult": "Ergebnis löschen",
     "clearResultConfirm": "Ergebnis wirklich löschen?",
     "matchNumber": "Spiel {number}",

@@ -108,6 +108,8 @@
     "loser": "Loser",
     "score": "Score",
     "setResult": "Set Result",
+    "scoresRequired": "Please enter both scores",
+    "scoresTied": "Scores cannot be tied",
     "clearResult": "Clear Result",
     "clearResultConfirm": "Really clear this result?",
     "matchNumber": "Match {number}",

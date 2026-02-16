@@ -56,12 +56,12 @@ export function MatchResultForm({
     const score2 = parseInt(team2Score, 10);
 
     if (isNaN(score1) || isNaN(score2)) {
-      setError('Bitte beide Ergebnisse eingeben');
+      setError(t('scoresRequired'));
       return;
     }
 
     if (score1 === score2) {
-      setError('Die Ergebnisse dürfen nicht gleich sein');
+      setError(t('scoresTied'));
       return;
     }
 
@@ -69,8 +69,8 @@ export function MatchResultForm({
     try {
       await onResult(match.id, score1, score2);
       onOpenChange(false);
-    } catch {
-      setError('Fehler beim Speichern');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : tCommon('error'));
     } finally {
       setIsSubmitting(false);
     }

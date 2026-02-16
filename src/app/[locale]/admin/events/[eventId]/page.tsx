@@ -220,9 +220,11 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
         status: 'completed',
       }),
     });
-    if (res.ok) {
-      await fetchData();
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      throw new Error(data?.error ?? 'Failed to save result');
     }
+    await fetchData();
   };
 
   const handleGenerateKnockout = async () => {
