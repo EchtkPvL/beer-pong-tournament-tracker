@@ -19,7 +19,7 @@ export function translateRoundName(
 
   switch (round.phase) {
     case 'finals':
-      return indexInPhase === 0 ? t('grandFinals') : t('resetMatch');
+      return t('grandFinals');
     case 'losers':
       return t('losersRound', { n: indexInPhase + 1 });
     case 'winners': {

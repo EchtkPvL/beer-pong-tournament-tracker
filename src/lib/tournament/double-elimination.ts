@@ -73,15 +73,6 @@ export function generateDoubleEliminationBracket(
   };
   rounds.push(grandFinalsRound);
 
-  // Reset match round
-  const resetRound: BracketRound = {
-    id: nanoid(),
-    roundNumber: winnersRounds + losersRoundCount + 2,
-    phase: 'finals',
-    name: 'Entscheidungsspiel',
-  };
-  rounds.push(resetRound);
-
   // Create winners bracket matches
   const winnersRoundRefs = rounds.filter(r => r.phase === 'winners');
   for (let r = 0; r < winnersRounds; r++) {
@@ -206,24 +197,6 @@ export function generateDoubleEliminationBracket(
     groupId: null,
   };
 
-  // Reset match
-  const resetMatch: BracketMatch = {
-    id: nanoid(),
-    matchNumber: 0,
-    scheduledRound: null,
-    team1Id: null,
-    team2Id: null,
-    isBye: false,
-    bracketPosition: 'GF-M2',
-    nextMatchId: null,
-    loserNextMatchId: null,
-    roundId: resetRound.id,
-    groupId: null,
-  };
-
-  grandFinalsMatch.nextMatchId = resetMatch.id;
-  grandFinalsMatch.loserNextMatchId = resetMatch.id;
-
   // Winners bracket final -> grand finals
   const winnersLast = allWinnersMatches[winnersRounds - 1];
   if (winnersLast && winnersLast[0]) {
@@ -307,7 +280,6 @@ export function generateDoubleEliminationBracket(
     ...allWinnersMatches.flat(),
     ...allLosersMatches.flat(),
     grandFinalsMatch,
-    resetMatch,
   ];
 
   return { rounds, matches: flatMatches };
