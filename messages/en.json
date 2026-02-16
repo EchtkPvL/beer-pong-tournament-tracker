@@ -86,6 +86,8 @@
     "disqualifyConfirm": "Really disqualify team {name}? All pending matches will be counted as losses.",
     "noTeams": "No teams yet",
     "deleteConfirm": "Really delete this team?",
+    "addWarningTitle": "Warning: Bracket Reset",
+    "addWarningDescription": "Adding a team will regenerate the bracket. All existing match results will be lost.",
     "count": "{count} Teams"
   },
   "bracket": {

@@ -30,6 +30,7 @@ import type { Team } from '@/lib/db/schema';
 interface TeamManagerProps {
   eventId: string;
   initialTeams: Team[];
+  hasMatches?: boolean;
   onTeamsChange?: () => void;
   onDisqualify?: () => void;
 }
@@ -42,7 +43,7 @@ interface TeamFormData {
 
 const emptyForm: TeamFormData = { name: '', members: '', seed: '' };
 
-export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify }: TeamManagerProps) {
+export function TeamManager({ eventId, initialTeams, hasMatches, onTeamsChange, onDisqualify }: TeamManagerProps) {
   const t = useTranslations('teams');
   const tCommon = useTranslations('common');
 
@@ -52,6 +53,7 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [formData, setFormData] = useState<TeamFormData>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddWarning, setShowAddWarning] = useState(false);
 
   const refreshTeams = async () => {
     try {
@@ -224,7 +226,7 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify
             <DialogHeader>
               <DialogTitle>{t('add')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={(e) => { e.preventDefault(); handleAdd(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); hasMatches ? setShowAddWarning(true) : handleAdd(); }}>
               {teamFormFields}
               <DialogFooter className="mt-4">
                 <Button
@@ -367,6 +369,24 @@ export function TeamManager({ eventId, initialTeams, onTeamsChange, onDisqualify
           </table>
         </div>
       )}
+
+      {/* Add team warning dialog */}
+      <AlertDialog open={showAddWarning} onOpenChange={setShowAddWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('addWarningTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('addWarningDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setShowAddWarning(false); handleAdd(); }}>
+              {tCommon('confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>

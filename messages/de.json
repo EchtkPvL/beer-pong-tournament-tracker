@@ -86,6 +86,8 @@
     "disqualifyConfirm": "Team {name} wirklich disqualifizieren? Alle ausstehenden Spiele werden als Niederlagen gewertet.",
     "noTeams": "Noch keine Teams",
     "deleteConfirm": "Team wirklich löschen?",
+    "addWarningTitle": "Achtung: Spielplan wird zurückgesetzt",
+    "addWarningDescription": "Das Hinzufügen eines Teams erstellt den Spielplan neu. Alle bisherigen Ergebnisse gehen verloren.",
     "count": "{count} Teams"
   },
   "bracket": {
