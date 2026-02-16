@@ -131,10 +131,17 @@ export default async function HomePage() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="gap-2">
                 <Button asChild>
                   <Link href={`/events/${currentEvent.id}`}>{t('viewEvent')}</Link>
                 </Button>
+                {currentEvent.status === 'active' && (
+                  <Button variant="outline" asChild>
+                    <Link href={`/events/${currentEvent.id}/beamer`} target="_blank">
+                      {t('openBeamer')}
+                    </Link>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           </section>
