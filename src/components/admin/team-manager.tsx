@@ -226,7 +226,7 @@ export function TeamManager({ eventId, initialTeams, hasMatches, onTeamsChange, 
             <DialogHeader>
               <DialogTitle>{t('add')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={(e) => { e.preventDefault(); hasMatches ? setShowAddWarning(true) : handleAdd(); }}>
+            <form onSubmit={(e) => { e.preventDefault(); if (hasMatches) { setShowAddWarning(true); } else { handleAdd(); } }}>
               {teamFormFields}
               <DialogFooter className="mt-4">
                 <Button
