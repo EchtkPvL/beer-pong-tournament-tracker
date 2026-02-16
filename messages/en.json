@@ -58,6 +58,7 @@
     "teamsAdvancePerGroup": "Teams Advancing per Group",
     "knockoutMode": "Knockout Format",
     "activate": "Activate",
+    "startTournament": "Start Tournament",
     "complete": "Complete",
     "deleteConfirm": "Really delete this tournament?",
     "deleteSuccess": "Tournament deleted",

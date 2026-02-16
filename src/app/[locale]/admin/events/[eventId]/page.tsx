@@ -568,8 +568,8 @@ export default function AdminEventPage({ params }: AdminEventPageProps) {
                   )}
 
                   {event.status === 'draft' && (
-                    <Button type="button" onClick={handleActivate} variant="secondary">
-                      {t('activate')}
+                    <Button type="button" onClick={handleActivate} variant="success">
+                      {t('startTournament')}
                     </Button>
                   )}
 
